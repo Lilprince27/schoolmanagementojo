@@ -12,6 +12,18 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/teacher/results")({ component: TeacherResults });
 
+type Entry = { notes: string; attendance: string; test: string; exam: string; remark: string };
+const emptyEntry: Entry = { notes: "", attendance: "", test: "", exam: "", remark: "" };
+
+function gradeFor(total: number): string {
+  if (total >= 70) return "A";
+  if (total >= 60) return "B";
+  if (total >= 50) return "C";
+  if (total >= 45) return "D";
+  if (total >= 40) return "E";
+  return "F";
+}
+
 function TeacherResults() {
   const { user } = useSession();
   const [subjectId, setSubjectId] = useState("");
@@ -45,20 +57,37 @@ function TeacherResults() {
     queryFn: async () => (await supabase.from("results").select("*").eq("subject_id", subjectId).eq("session_id", sessionId).eq("term", term).in("student_id", students!.map((s) => s.id))).data ?? [],
   });
 
-  const [scores, setScores] = useState<Record<string, { ca: string; exam: string }>>({});
+  const [scores, setScores] = useState<Record<string, Entry>>({});
   useEffect(() => {
-    const m: Record<string, { ca: string; exam: string }> = {};
-    (existing ?? []).forEach((r) => (m[r.student_id] = { ca: String(r.ca_score), exam: String(r.exam_score) }));
+    const m: Record<string, Entry> = {};
+    (existing ?? []).forEach((r: any) => (m[r.student_id] = {
+      notes: String(r.notes_score ?? ""),
+      attendance: String(r.attendance_score ?? ""),
+      test: String(r.test_score ?? ""),
+      exam: String(r.exam_score ?? ""),
+      remark: r.remark ?? "",
+    }));
     setScores(m);
   }, [existing]);
+
+  function update(studentId: string, field: keyof Entry, value: string) {
+    setScores((prev) => ({ ...prev, [studentId]: { ...(prev[studentId] ?? emptyEntry), [field]: value } }));
+  }
 
   async function save() {
     if (!user || !students || !subjectId || !sessionId) return toast.error("Select subject and session");
     const rows = students
-      .filter((s) => scores[s.id]?.ca || scores[s.id]?.exam)
+      .filter((s) => {
+        const e = scores[s.id];
+        return e && (e.notes || e.attendance || e.test || e.exam || e.remark);
+      })
       .map((s) => ({
         student_id: s.id, subject_id: subjectId, session_id: sessionId, term,
-        ca_score: Number(scores[s.id]?.ca || 0), exam_score: Number(scores[s.id]?.exam || 0),
+        notes_score: Number(scores[s.id]?.notes || 0),
+        attendance_score: Number(scores[s.id]?.attendance || 0),
+        test_score: Number(scores[s.id]?.test || 0),
+        exam_score: Number(scores[s.id]?.exam || 0),
+        remark: scores[s.id]?.remark || null,
         recorded_by: user.id,
       }));
     if (!rows.length) return toast.error("Enter at least one score");
@@ -73,7 +102,7 @@ function TeacherResults() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold flex items-center gap-2"><FileBarChart /> Results</h1>
-        <p className="text-muted-foreground">Enter CA (0–40) and exam (0–60). Total & grade compute automatically.</p>
+        <p className="text-muted-foreground">Notes /10 · Attendance /10 · Test /20 · Exam /60 — total & grade auto-compute.</p>
       </div>
       <div className="card-soft p-4 grid sm:grid-cols-4 gap-3">
         <div><Label>Subject</Label>
@@ -99,29 +128,36 @@ function TeacherResults() {
         <div className="flex items-end"><Button className="w-full" onClick={save}>Save results</Button></div>
       </div>
 
-      <div className="card-soft overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="card-soft overflow-x-auto">
+        <table className="w-full text-sm min-w-[860px]">
           <thead className="bg-muted/40 text-left"><tr>
-            <th className="px-4 py-3 font-medium">Student</th>
-            <th className="px-4 py-3 font-medium w-24">CA /40</th>
-            <th className="px-4 py-3 font-medium w-24">Exam /60</th>
-            <th className="px-4 py-3 font-medium w-20">Total</th>
-            <th className="px-4 py-3 font-medium w-16">Grade</th>
+            <th className="px-3 py-3 font-medium">Student</th>
+            <th className="px-2 py-3 font-medium w-20">Notes /10</th>
+            <th className="px-2 py-3 font-medium w-20">Attd /10</th>
+            <th className="px-2 py-3 font-medium w-20">Test /20</th>
+            <th className="px-2 py-3 font-medium w-20">Exam /60</th>
+            <th className="px-2 py-3 font-medium w-16">Total</th>
+            <th className="px-2 py-3 font-medium w-14">Grade</th>
+            <th className="px-2 py-3 font-medium min-w-[160px]">Remark</th>
           </tr></thead>
           <tbody>
-            {!subjectId || !sessionId ? <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">Select subject and session.</td></tr> :
-              students?.length === 0 ? <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">No students.</td></tr> :
+            {!subjectId || !sessionId ? <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">Select subject and session.</td></tr> :
+              students?.length === 0 ? <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">No students.</td></tr> :
               students?.map((s) => {
-                const ca = Number(scores[s.id]?.ca || 0); const ex = Number(scores[s.id]?.exam || 0);
-                const total = ca + ex;
-                const grade = total >= 70 ? "A" : total >= 60 ? "B" : total >= 50 ? "C" : total >= 45 ? "D" : total >= 40 ? "E" : "F";
+                const e = scores[s.id] ?? emptyEntry;
+                const n = Number(e.notes || 0), a = Number(e.attendance || 0), t = Number(e.test || 0), x = Number(e.exam || 0);
+                const total = n + a + t + x;
+                const has = e.notes || e.attendance || e.test || e.exam;
                 return (
                   <tr key={s.id} className="border-t border-border">
-                    <td className="px-4 py-2 font-medium">{s.full_name}</td>
-                    <td className="px-4 py-2"><Input type="number" min={0} max={40} value={scores[s.id]?.ca ?? ""} onChange={(e) => setScores({ ...scores, [s.id]: { ca: e.target.value, exam: scores[s.id]?.exam ?? "" } })} /></td>
-                    <td className="px-4 py-2"><Input type="number" min={0} max={60} value={scores[s.id]?.exam ?? ""} onChange={(e) => setScores({ ...scores, [s.id]: { ca: scores[s.id]?.ca ?? "", exam: e.target.value } })} /></td>
-                    <td className="px-4 py-2 font-semibold">{total || "—"}</td>
-                    <td className="px-4 py-2"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{(ca || ex) ? grade : "—"}</span></td>
+                    <td className="px-3 py-2 font-medium">{s.full_name}</td>
+                    <td className="px-2 py-2"><Input type="number" min={0} max={10} value={e.notes} onChange={(ev) => update(s.id, "notes", ev.target.value)} /></td>
+                    <td className="px-2 py-2"><Input type="number" min={0} max={10} value={e.attendance} onChange={(ev) => update(s.id, "attendance", ev.target.value)} /></td>
+                    <td className="px-2 py-2"><Input type="number" min={0} max={20} value={e.test} onChange={(ev) => update(s.id, "test", ev.target.value)} /></td>
+                    <td className="px-2 py-2"><Input type="number" min={0} max={60} value={e.exam} onChange={(ev) => update(s.id, "exam", ev.target.value)} /></td>
+                    <td className="px-2 py-2 font-semibold">{has ? total : "—"}</td>
+                    <td className="px-2 py-2"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{has ? gradeFor(total) : "—"}</span></td>
+                    <td className="px-2 py-2"><Input placeholder="e.g. Excellent" value={e.remark} onChange={(ev) => update(s.id, "remark", ev.target.value)} /></td>
                   </tr>
                 );
               })
