@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
-  const { data: roles, isLoading } = useRoles(user?.id);
+  const { data: roles, isLoading, isFetching, refetch } = useRoles(user?.id);
   const role = primaryRole(roles);
 
   return (
@@ -28,10 +28,18 @@ function Dashboard() {
       {role === "student" && <StudentDashboard userId={user!.id} />}
       {!role && !isLoading && (
         <div className="card-soft p-6">
-          <h2 className="font-semibold">No role assigned</h2>
+          <h2 className="font-semibold">Access role is still being set up</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Ask your school administrator to assign you a role so you can access your portal.
+            If your administrator role was just added, refresh access to open your portal.
           </p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
+          >
+            {isFetching ? "Refreshing…" : "Refresh access"}
+          </button>
         </div>
       )}
     </div>
