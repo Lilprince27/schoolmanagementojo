@@ -251,47 +251,53 @@ export type Database = {
       }
       results: {
         Row: {
-          ca_score: number
+          attendance_score: number
           created_at: string
           exam_score: number
           grade: string | null
           id: string
+          notes_score: number
           recorded_by: string | null
           remark: string | null
           session_id: string
           student_id: string
           subject_id: string
           term: Database["public"]["Enums"]["term_type"]
+          test_score: number
           total: number | null
           updated_at: string
         }
         Insert: {
-          ca_score?: number
+          attendance_score?: number
           created_at?: string
           exam_score?: number
           grade?: string | null
           id?: string
+          notes_score?: number
           recorded_by?: string | null
           remark?: string | null
           session_id: string
           student_id: string
           subject_id: string
           term: Database["public"]["Enums"]["term_type"]
+          test_score?: number
           total?: number | null
           updated_at?: string
         }
         Update: {
-          ca_score?: number
+          attendance_score?: number
           created_at?: string
           exam_score?: number
           grade?: string | null
           id?: string
+          notes_score?: number
           recorded_by?: string | null
           remark?: string | null
           session_id?: string
           student_id?: string
           subject_id?: string
           term?: Database["public"]["Enums"]["term_type"]
+          test_score?: number
           total?: number | null
           updated_at?: string
         }
