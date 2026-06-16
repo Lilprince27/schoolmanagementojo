@@ -30,21 +30,29 @@ export function StudentSelf({ kind }: { kind: "results" | "attendance" }) {
         <div className="card-soft overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left"><tr>
-              <th className="px-4 py-3 font-medium">Subject</th><th className="px-4 py-3 font-medium">Session</th>
-              <th className="px-4 py-3 font-medium">Term</th><th className="px-4 py-3 font-medium">CA</th>
-              <th className="px-4 py-3 font-medium">Exam</th><th className="px-4 py-3 font-medium">Total</th>
-              <th className="px-4 py-3 font-medium">Grade</th>
+              <th className="px-3 py-3 font-medium">Subject</th>
+              <th className="px-3 py-3 font-medium">Term</th>
+              <th className="px-3 py-3 font-medium">Notes /10</th>
+              <th className="px-3 py-3 font-medium">Attd /10</th>
+              <th className="px-3 py-3 font-medium">Test /20</th>
+              <th className="px-3 py-3 font-medium">Exam /60</th>
+              <th className="px-3 py-3 font-medium">Total</th>
+              <th className="px-3 py-3 font-medium">Grade</th>
+              <th className="px-3 py-3 font-medium">Remark</th>
             </tr></thead>
             <tbody>
-              {results?.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No results yet.</td></tr>}
+              {results?.length === 0 && <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">No results yet.</td></tr>}
               {results?.map((r: any) => (
                 <tr key={r.id} className="border-t border-border">
-                  <td className="px-4 py-3 font-medium">{r.subjects?.name}</td>
-                  <td className="px-4 py-3">{r.academic_sessions?.name}</td>
-                  <td className="px-4 py-3 capitalize">{r.term}</td>
-                  <td className="px-4 py-3">{r.ca_score}</td><td className="px-4 py-3">{r.exam_score}</td>
-                  <td className="px-4 py-3 font-semibold">{r.total}</td>
-                  <td className="px-4 py-3"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{r.grade}</span></td>
+                  <td className="px-3 py-3 font-medium">{r.subjects?.name}</td>
+                  <td className="px-3 py-3 capitalize">{r.term}</td>
+                  <td className="px-3 py-3">{r.notes_score}</td>
+                  <td className="px-3 py-3">{r.attendance_score}</td>
+                  <td className="px-3 py-3">{r.test_score}</td>
+                  <td className="px-3 py-3">{r.exam_score}</td>
+                  <td className="px-3 py-3 font-semibold">{r.total}</td>
+                  <td className="px-3 py-3"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{r.grade}</span></td>
+                  <td className="px-3 py-3 text-muted-foreground">{r.remark ?? "—"}</td>
                 </tr>
               ))}
             </tbody>

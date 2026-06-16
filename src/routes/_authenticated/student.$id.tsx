@@ -94,22 +94,32 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "suc
 
 function ResultsTable({ results }: { results: any[] }) {
   return (
-    <div className="card-soft overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="card-soft overflow-x-auto">
+      <table className="w-full text-sm min-w-[760px]">
         <thead className="bg-muted/40 text-left"><tr>
-          <th className="px-4 py-3 font-medium">Subject</th><th className="px-4 py-3 font-medium">Term</th>
-          <th className="px-4 py-3 font-medium">CA</th><th className="px-4 py-3 font-medium">Exam</th>
-          <th className="px-4 py-3 font-medium">Total</th><th className="px-4 py-3 font-medium">Grade</th>
+          <th className="px-3 py-3 font-medium">Subject</th>
+          <th className="px-3 py-3 font-medium">Term</th>
+          <th className="px-3 py-3 font-medium">Notes /10</th>
+          <th className="px-3 py-3 font-medium">Attd /10</th>
+          <th className="px-3 py-3 font-medium">Test /20</th>
+          <th className="px-3 py-3 font-medium">Exam /60</th>
+          <th className="px-3 py-3 font-medium">Total</th>
+          <th className="px-3 py-3 font-medium">Grade</th>
+          <th className="px-3 py-3 font-medium">Remark</th>
         </tr></thead>
         <tbody>
-          {results.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No results.</td></tr>}
+          {results.length === 0 && <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">No results.</td></tr>}
           {results.map((r) => (
             <tr key={r.id} className="border-t border-border">
-              <td className="px-4 py-3 font-medium">{r.subjects?.name}</td>
-              <td className="px-4 py-3 capitalize">{r.term}</td>
-              <td className="px-4 py-3">{r.ca_score}</td><td className="px-4 py-3">{r.exam_score}</td>
-              <td className="px-4 py-3 font-semibold">{r.total}</td>
-              <td className="px-4 py-3"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{r.grade}</span></td>
+              <td className="px-3 py-3 font-medium">{r.subjects?.name}</td>
+              <td className="px-3 py-3 capitalize">{r.term}</td>
+              <td className="px-3 py-3">{r.notes_score}</td>
+              <td className="px-3 py-3">{r.attendance_score}</td>
+              <td className="px-3 py-3">{r.test_score}</td>
+              <td className="px-3 py-3">{r.exam_score}</td>
+              <td className="px-3 py-3 font-semibold">{r.total}</td>
+              <td className="px-3 py-3"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary font-bold text-xs">{r.grade}</span></td>
+              <td className="px-3 py-3 text-muted-foreground">{r.remark ?? "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -138,7 +148,7 @@ function ReportCard({ student, results, present, absent, late }: { student: any;
         <Button onClick={() => window.print()}><Printer className="h-4 w-4 mr-1" /> Print / Save PDF</Button>
       </div>
 
-      <div className="bg-white text-slate-900 rounded-2xl border border-border p-10 print:rounded-none print:border-0 print:p-12 print:shadow-none shadow-pop max-w-3xl mx-auto">
+      <div className="bg-white text-slate-900 rounded-2xl border border-border p-10 print:rounded-none print:border-0 print:p-12 print:shadow-none shadow-pop max-w-4xl mx-auto">
         <div className="text-center border-b-2 border-slate-200 pb-4">
           <h1 className="text-3xl font-extrabold">EduConnect Academy</h1>
           <p className="text-slate-500">Student Report Card</p>
@@ -153,23 +163,29 @@ function ReportCard({ student, results, present, absent, late }: { student: any;
         </div>
 
         <h2 className="mt-8 mb-2 font-bold text-lg">Subject scores</h2>
-        <table className="w-full text-sm border border-slate-200">
+        <table className="w-full text-xs border border-slate-200">
           <thead className="bg-slate-50 text-left"><tr>
-            <th className="px-3 py-2 border-b border-slate-200">Subject</th>
-            <th className="px-3 py-2 border-b border-slate-200">CA /40</th>
-            <th className="px-3 py-2 border-b border-slate-200">Exam /60</th>
-            <th className="px-3 py-2 border-b border-slate-200">Total</th>
-            <th className="px-3 py-2 border-b border-slate-200">Grade</th>
+            <th className="px-2 py-2 border-b border-slate-200">Subject</th>
+            <th className="px-2 py-2 border-b border-slate-200">Notes /10</th>
+            <th className="px-2 py-2 border-b border-slate-200">Attd /10</th>
+            <th className="px-2 py-2 border-b border-slate-200">Test /20</th>
+            <th className="px-2 py-2 border-b border-slate-200">Exam /60</th>
+            <th className="px-2 py-2 border-b border-slate-200">Total /100</th>
+            <th className="px-2 py-2 border-b border-slate-200">Grade</th>
+            <th className="px-2 py-2 border-b border-slate-200">Remark</th>
           </tr></thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={5} className="text-center py-6 text-slate-400">No results for this term.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="text-center py-6 text-slate-400">No results for this term.</td></tr>}
             {filtered.map((r) => (
               <tr key={r.id} className="border-t border-slate-100">
-                <td className="px-3 py-2">{r.subjects?.name}</td>
-                <td className="px-3 py-2">{r.ca_score}</td>
-                <td className="px-3 py-2">{r.exam_score}</td>
-                <td className="px-3 py-2 font-semibold">{r.total}</td>
-                <td className="px-3 py-2">{r.grade}</td>
+                <td className="px-2 py-2 font-medium">{r.subjects?.name}</td>
+                <td className="px-2 py-2">{r.notes_score}</td>
+                <td className="px-2 py-2">{r.attendance_score}</td>
+                <td className="px-2 py-2">{r.test_score}</td>
+                <td className="px-2 py-2">{r.exam_score}</td>
+                <td className="px-2 py-2 font-semibold">{r.total}</td>
+                <td className="px-2 py-2 font-bold">{r.grade}</td>
+                <td className="px-2 py-2 text-slate-600">{r.remark ?? "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -182,7 +198,7 @@ function ReportCard({ student, results, present, absent, late }: { student: any;
           <SummaryRow label="Attendance" value={`${present} P • ${absent} A • ${late} L`} />
         </div>
         <div className="grid grid-cols-2 gap-6 mt-8 text-sm">
-          <div><div className="text-slate-500">Teacher's remark</div><div className="mt-2 border-b border-slate-300 pb-6">{overall === "A" || overall === "B" ? "Excellent performance. Keep it up!" : overall === "C" ? "Good effort. Continue to work hard." : "Needs improvement. More effort required."}</div></div>
+          <div><div className="text-slate-500">Class teacher's remark</div><div className="mt-2 border-b border-slate-300 pb-6">{overall === "A" || overall === "B" ? "Excellent performance. Keep it up!" : overall === "C" ? "Good effort. Continue to work hard." : "Needs improvement. More effort required."}</div></div>
           <div><div className="text-slate-500">Principal's remark</div><div className="mt-2 border-b border-slate-300 pb-6">An admirable term. We are proud of you.</div></div>
         </div>
       </div>
