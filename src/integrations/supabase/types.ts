@@ -132,6 +132,167 @@ export type Database = {
           },
         ]
       }
+      bus_fee_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          period: string
+          recorded_by: string | null
+          route_id: string | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          period: string
+          recorded_by?: string | null
+          route_id?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          period?: string
+          recorded_by?: string | null
+          route_id?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_fee_payments_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_fee_payments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bus_routes: {
+        Row: {
+          bus_id: string | null
+          created_at: string
+          description: string | null
+          dropoff_time: string | null
+          id: string
+          monthly_fee: number
+          name: string
+          pickup_time: string | null
+          school_id: string
+          stops: Json
+          updated_at: string
+        }
+        Insert: {
+          bus_id?: string | null
+          created_at?: string
+          description?: string | null
+          dropoff_time?: string | null
+          id?: string
+          monthly_fee?: number
+          name: string
+          pickup_time?: string | null
+          school_id: string
+          stops?: Json
+          updated_at?: string
+        }
+        Update: {
+          bus_id?: string | null
+          created_at?: string
+          description?: string | null
+          dropoff_time?: string | null
+          id?: string
+          monthly_fee?: number
+          name?: string
+          pickup_time?: string | null
+          school_id?: string
+          stops?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_routes_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_routes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buses: {
+        Row: {
+          capacity: number
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          model: string | null
+          plate_number: string
+          school_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          model?: string | null
+          plate_number: string
+          school_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          model?: string | null
+          plate_number?: string
+          school_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -407,6 +568,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      student_bus_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          route_id: string
+          status: string
+          stop_name: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          route_id: string
+          status?: string
+          stop_name?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          route_id?: string
+          status?: string
+          stop_name?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_bus_assignments_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_bus_assignments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
