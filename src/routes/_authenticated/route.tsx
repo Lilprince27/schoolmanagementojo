@@ -5,7 +5,7 @@ import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, BookOpen, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
