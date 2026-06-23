@@ -682,6 +682,7 @@ export type Database = {
         | "subject_teacher"
         | "parent"
         | "student"
+        | "transport_manager"
       approval_status: "pending" | "approved" | "rejected"
       attendance_status: "present" | "absent" | "late"
       gender_type: "male" | "female" | "other"
@@ -821,6 +822,7 @@ export const Constants = {
         "subject_teacher",
         "parent",
         "student",
+        "transport_manager",
       ],
       approval_status: ["pending", "approved", "rejected"],
       attendance_status: ["present", "absent", "late"],
