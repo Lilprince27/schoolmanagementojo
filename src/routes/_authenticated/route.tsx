@@ -5,7 +5,7 @@ import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, BookOpen, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -89,7 +89,14 @@ function buildNav(role: ReturnType<typeof primaryRole>) {
       { to: "/admin/teachers", label: "Teachers", icon: UserSquare2 },
       { to: "/admin/parents", label: "Parents", icon: Users },
       { to: "/admin/classes", label: "Classes & Subjects", icon: School },
+      { to: "/transport", label: "School Bus", icon: Bus },
       { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
+    ];
+  }
+  if (role === "transport_manager") {
+    return [
+      ...base,
+      { to: "/transport", label: "School Bus", icon: Bus },
     ];
   }
   if (isTeacher(role)) {
@@ -104,6 +111,7 @@ function buildNav(role: ReturnType<typeof primaryRole>) {
     return [
       ...base,
       { to: "/parent/children", label: "My Children", icon: Baby },
+      { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/parent/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -112,6 +120,7 @@ function buildNav(role: ReturnType<typeof primaryRole>) {
       ...base,
       { to: "/student/results", label: "My Results", icon: FileBarChart },
       { to: "/student/attendance", label: "My Attendance", icon: ClipboardCheck },
+      { to: "/my-bus", label: "My Bus", icon: Bus },
     ];
   }
   return base;

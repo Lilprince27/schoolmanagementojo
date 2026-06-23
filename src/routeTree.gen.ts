@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTransportRouteImport } from './routes/_authenticated/transport'
+import { Route as AuthenticatedMyBusRouteImport } from './routes/_authenticated/my-bus'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedTeacherStudentsRouteImport } from './routes/_authenticated/teacher.students'
 import { Route as AuthenticatedTeacherResultsRouteImport } from './routes/_authenticated/teacher.results'
@@ -40,6 +42,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTransportRoute = AuthenticatedTransportRouteImport.update({
+  id: '/transport',
+  path: '/transport',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMyBusRoute = AuthenticatedMyBusRouteImport.update({
+  id: '/my-bus',
+  path: '/my-bus',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -128,6 +140,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-bus': typeof AuthenticatedMyBusRoute
+  '/transport': typeof AuthenticatedTransportRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/parents': typeof AuthenticatedAdminParentsRoute
@@ -146,6 +160,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-bus': typeof AuthenticatedMyBusRoute
+  '/transport': typeof AuthenticatedTransportRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/parents': typeof AuthenticatedAdminParentsRoute
@@ -166,6 +182,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/my-bus': typeof AuthenticatedMyBusRoute
+  '/_authenticated/transport': typeof AuthenticatedTransportRoute
   '/_authenticated/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/_authenticated/admin/parents': typeof AuthenticatedAdminParentsRoute
@@ -186,6 +204,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/my-bus'
+    | '/transport'
     | '/admin/announcements'
     | '/admin/classes'
     | '/admin/parents'
@@ -204,6 +224,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/my-bus'
+    | '/transport'
     | '/admin/announcements'
     | '/admin/classes'
     | '/admin/parents'
@@ -223,6 +245,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/my-bus'
+    | '/_authenticated/transport'
     | '/_authenticated/admin/announcements'
     | '/_authenticated/admin/classes'
     | '/_authenticated/admin/parents'
@@ -266,6 +290,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/transport': {
+      id: '/_authenticated/transport'
+      path: '/transport'
+      fullPath: '/transport'
+      preLoaderRoute: typeof AuthenticatedTransportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-bus': {
+      id: '/_authenticated/my-bus'
+      path: '/my-bus'
+      fullPath: '/my-bus'
+      preLoaderRoute: typeof AuthenticatedMyBusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -370,6 +408,8 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMyBusRoute: typeof AuthenticatedMyBusRoute
+  AuthenticatedTransportRoute: typeof AuthenticatedTransportRoute
   AuthenticatedAdminAnnouncementsRoute: typeof AuthenticatedAdminAnnouncementsRoute
   AuthenticatedAdminClassesRoute: typeof AuthenticatedAdminClassesRoute
   AuthenticatedAdminParentsRoute: typeof AuthenticatedAdminParentsRoute
@@ -387,6 +427,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMyBusRoute: AuthenticatedMyBusRoute,
+  AuthenticatedTransportRoute: AuthenticatedTransportRoute,
   AuthenticatedAdminAnnouncementsRoute: AuthenticatedAdminAnnouncementsRoute,
   AuthenticatedAdminClassesRoute: AuthenticatedAdminClassesRoute,
   AuthenticatedAdminParentsRoute: AuthenticatedAdminParentsRoute,
@@ -413,13 +455,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
