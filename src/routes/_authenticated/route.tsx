@@ -1,11 +1,13 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link, useRouter, useLocation } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
+import { useMembership } from "@/lib/hooks/use-membership";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, Users, GraduationCap, UserSquare2, BookOpen, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby, Bus
+  LayoutDashboard, Users, GraduationCap, UserSquare2, ClipboardCheck,
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,9 +25,21 @@ function AuthedShell() {
   const { user } = useSession();
   const { data: roles } = useRoles(user?.id);
   const { data: profile } = useProfile(user?.id);
+  const { data: membership } = useMembership(user?.id, profile?.email);
   const role = primaryRole(roles);
   const router = useRouter();
+  const location = useLocation();
   const qc = useQueryClient();
+
+  // Route unassigned users to /onboarding (except platform admin)
+  useEffect(() => {
+    if (!membership) return;
+    const path = location.pathname;
+    const needsOnboarding = !membership.isPlatformAdmin && !membership.schoolId;
+    if (needsOnboarding && path !== "/onboarding") {
+      router.navigate({ to: "/onboarding", replace: true });
+    }
+  }, [membership, location.pathname, router]);
 
   async function signOut() {
     await qc.cancelQueries();
@@ -34,7 +48,7 @@ function AuthedShell() {
     router.navigate({ to: "/auth", replace: true });
   }
 
-  const navItems = buildNav(role);
+  const navItems = buildNav(role, membership);
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -57,7 +71,12 @@ function AuthedShell() {
         <div className="p-3 border-t border-sidebar-border">
           <div className="px-3 py-2">
             <div className="text-sm font-medium truncate">{profile?.full_name || user?.email}</div>
-            <div className="text-xs text-muted-foreground">{role ? ROLE_LABELS[role] : "No role"}</div>
+            <div className="text-xs text-muted-foreground">
+              {membership?.isPlatformAdmin ? "Platform Admin" : role ? ROLE_LABELS[role] : "Awaiting approval"}
+            </div>
+            {membership?.schoolName && (
+              <div className="text-xs text-muted-foreground truncate">{membership.schoolName}</div>
+            )}
           </div>
           <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" /> Sign out
@@ -80,11 +99,24 @@ function AuthedShell() {
   );
 }
 
-function buildNav(role: ReturnType<typeof primaryRole>) {
-  const base = [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }];
-  if (role === "super_admin") {
+type NavItem = { to: string; label: string; icon: any };
+
+function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<typeof useMembership>["data"]): NavItem[] {
+  const base: NavItem[] = [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }];
+
+  if (membership?.isPlatformAdmin) {
+    base.push({ to: "/platform", label: "Schools", icon: ShieldCheck });
+  }
+
+  // Unassigned (not platform admin, no school): only show onboarding
+  if (!membership?.isPlatformAdmin && !membership?.schoolId) {
+    return [{ to: "/onboarding", label: "Choose your school", icon: School }];
+  }
+
+  if (membership?.isSchoolAdmin || role === "super_admin") {
     return [
       ...base,
+      { to: "/dashboard", label: "Join requests", icon: Inbox },
       { to: "/admin/students", label: "Students", icon: GraduationCap },
       { to: "/admin/teachers", label: "Teachers", icon: UserSquare2 },
       { to: "/admin/parents", label: "Parents", icon: Users },
@@ -94,10 +126,7 @@ function buildNav(role: ReturnType<typeof primaryRole>) {
     ];
   }
   if (role === "transport_manager") {
-    return [
-      ...base,
-      { to: "/transport", label: "School Bus", icon: Bus },
-    ];
+    return [...base, { to: "/transport", label: "School Bus", icon: Bus }];
   }
   if (isTeacher(role)) {
     return [

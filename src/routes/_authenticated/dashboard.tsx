@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
+import { useMembership } from "@/lib/hooks/use-membership";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
-import { useQuery } from "@tanstack/react-query";
-import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone, Check, X, Inbox } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -13,15 +16,21 @@ function Dashboard() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: roles, isLoading, isFetching, refetch } = useRoles(user?.id);
+  const { data: membership } = useMembership(user?.id, profile?.email);
   const role = primaryRole(roles);
+  const isAdminView = membership?.isSchoolAdmin || membership?.isPlatformAdmin || role === "super_admin";
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-extrabold">Welcome back, {profile?.full_name?.split(" ")[0] || "there"} 👋</h1>
-        <p className="text-muted-foreground">Signed in as {role ? ROLE_LABELS[role] : isLoading ? "…" : "no role yet"}</p>
+        <p className="text-muted-foreground">
+          {membership?.isPlatformAdmin ? "Platform administrator" : role ? ROLE_LABELS[role] : isLoading ? "…" : "Awaiting approval"}
+          {membership?.schoolName && ` · ${membership.schoolName}`}
+        </p>
       </div>
 
+      {isAdminView && membership?.schoolId && <JoinRequestsPanel schoolId={membership.schoolId} />}
       {role === "super_admin" && <AdminDashboard />}
       {isTeacher(role) && <TeacherDashboard userId={user!.id} />}
       {role === "parent" && <ParentDashboard userId={user!.id} />}
@@ -42,6 +51,59 @@ function Dashboard() {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function JoinRequestsPanel({ schoolId }: { schoolId: string }) {
+  const qc = useQueryClient();
+  const { data: requests, refetch } = useQuery({
+    queryKey: ["join-requests", schoolId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("join_requests")
+        .select("id, requested_role, message, created_at, user_id, profiles:user_id(full_name, email)")
+        .eq("school_id", schoolId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  async function act(id: string, approve: boolean) {
+    const fn = approve ? "approve_join_request" : "reject_join_request";
+    const { error } = await supabase.rpc(fn, { _request_id: id });
+    if (error) return toast.error(error.message);
+    toast.success(approve ? "Approved" : "Rejected");
+    refetch();
+    qc.invalidateQueries({ queryKey: ["admin-stats"] });
+  }
+
+  if (!requests || requests.length === 0) return null;
+
+  return (
+    <div className="card-soft p-5">
+      <h2 className="font-semibold flex items-center gap-2 mb-4">
+        <Inbox className="h-4 w-4" /> Pending join requests
+        <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{requests.length}</span>
+      </h2>
+      <div className="divide-y divide-border">
+        {requests.map((r: any) => (
+          <div key={r.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div className="font-medium">{r.profiles?.full_name || r.profiles?.email || "Unknown"}</div>
+              <div className="text-xs text-muted-foreground">
+                {r.profiles?.email} · wants to join as <b>{ROLE_LABELS[r.requested_role as keyof typeof ROLE_LABELS] ?? r.requested_role}</b>
+                {r.message && ` · "${r.message}"`}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => act(r.id, true)}><Check className="h-4 w-4 mr-1" /> Approve</Button>
+              <Button size="sm" variant="outline" onClick={() => act(r.id, false)}><X className="h-4 w-4 mr-1" /> Reject</Button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

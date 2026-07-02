@@ -328,6 +328,53 @@ export type Database = {
           },
         ]
       }
+      join_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          requested_role: Database["public"]["Enums"]["app_role"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["join_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          requested_role: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["join_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["join_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "join_requests_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_students: {
         Row: {
           created_at: string
@@ -529,8 +576,11 @@ export type Database = {
       }
       schools: {
         Row: {
-          address: string
-          code: string
+          address: string | null
+          admin_email: string | null
+          admin_profile_id: string | null
+          code: string | null
+          country: string
           created_at: string
           created_by: string | null
           email: string | null
@@ -542,8 +592,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          address: string
-          code?: string
+          address?: string | null
+          admin_email?: string | null
+          admin_profile_id?: string | null
+          code?: string | null
+          country?: string
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -555,8 +608,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          address?: string
-          code?: string
+          address?: string | null
+          admin_email?: string | null
+          admin_profile_id?: string | null
+          code?: string | null
+          country?: string
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -854,8 +910,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_join_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       approve_parent: { Args: { _parent_id: string }; Returns: undefined }
       approve_teacher: { Args: { _teacher_id: string }; Returns: undefined }
+      assign_school_admin: {
+        Args: { _email: string; _school_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -869,10 +933,16 @@ export type Database = {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_school_admin: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_student_self: {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      reject_join_request: { Args: { _request_id: string }; Returns: undefined }
       reject_parent: { Args: { _parent_id: string }; Returns: undefined }
       reject_teacher: { Args: { _teacher_id: string }; Returns: undefined }
       teacher_can_see_student: {
@@ -892,6 +962,7 @@ export type Database = {
       approval_status: "pending" | "approved" | "rejected"
       attendance_status: "present" | "absent" | "late"
       gender_type: "male" | "female" | "other"
+      join_status: "pending" | "approved" | "rejected"
       teacher_type: "class_teacher" | "subject_teacher"
       term_type: "first" | "second" | "third"
     }
@@ -1033,6 +1104,7 @@ export const Constants = {
       approval_status: ["pending", "approved", "rejected"],
       attendance_status: ["present", "absent", "late"],
       gender_type: ["male", "female", "other"],
+      join_status: ["pending", "approved", "rejected"],
       teacher_type: ["class_teacher", "subject_teacher"],
       term_type: ["first", "second", "third"],
     },
