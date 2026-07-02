@@ -26,12 +26,13 @@ function Onboarding() {
   const [state, setState] = useState<string>("");
   const [lga, setLga] = useState("");
 
+  const stateFilter = state && state !== "__any" ? state : "";
   const { data: schools, isLoading } = useQuery({
-    queryKey: ["schools-search", q, state, lga],
+    queryKey: ["schools-search", q, stateFilter, lga],
     queryFn: async () => {
       let query = supabase.from("schools").select("id, name, address, state, lga, country").order("name");
       if (q) query = query.ilike("name", `%${q}%`);
-      if (state) query = query.eq("state", state);
+      if (stateFilter) query = query.eq("state", stateFilter);
       if (lga) query = query.ilike("lga", `%${lga}%`);
       const { data, error } = await query.limit(50);
       if (error) throw error;

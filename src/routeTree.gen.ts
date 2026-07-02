@@ -13,6 +13,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTransportRouteImport } from './routes/_authenticated/transport'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMyBusRouteImport } from './routes/_authenticated/my-bus'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedTeacherStudentsRouteImport } from './routes/_authenticated/teacher.students'
@@ -46,6 +48,16 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTransportRoute = AuthenticatedTransportRouteImport.update({
   id: '/transport',
   path: '/transport',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMyBusRoute = AuthenticatedMyBusRouteImport.update({
@@ -141,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-bus': typeof AuthenticatedMyBusRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/platform': typeof AuthenticatedPlatformRoute
   '/transport': typeof AuthenticatedTransportRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
@@ -161,6 +175,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-bus': typeof AuthenticatedMyBusRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/platform': typeof AuthenticatedPlatformRoute
   '/transport': typeof AuthenticatedTransportRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
@@ -183,6 +199,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/my-bus': typeof AuthenticatedMyBusRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRoute
   '/_authenticated/transport': typeof AuthenticatedTransportRoute
   '/_authenticated/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
@@ -205,6 +223,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/my-bus'
+    | '/onboarding'
+    | '/platform'
     | '/transport'
     | '/admin/announcements'
     | '/admin/classes'
@@ -225,6 +245,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/my-bus'
+    | '/onboarding'
+    | '/platform'
     | '/transport'
     | '/admin/announcements'
     | '/admin/classes'
@@ -246,6 +268,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/my-bus'
+    | '/_authenticated/onboarding'
+    | '/_authenticated/platform'
     | '/_authenticated/transport'
     | '/_authenticated/admin/announcements'
     | '/_authenticated/admin/classes'
@@ -296,6 +320,20 @@ declare module '@tanstack/react-router' {
       path: '/transport'
       fullPath: '/transport'
       preLoaderRoute: typeof AuthenticatedTransportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/my-bus': {
@@ -409,6 +447,8 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMyBusRoute: typeof AuthenticatedMyBusRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
   AuthenticatedTransportRoute: typeof AuthenticatedTransportRoute
   AuthenticatedAdminAnnouncementsRoute: typeof AuthenticatedAdminAnnouncementsRoute
   AuthenticatedAdminClassesRoute: typeof AuthenticatedAdminClassesRoute
@@ -428,6 +468,8 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMyBusRoute: AuthenticatedMyBusRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
   AuthenticatedTransportRoute: AuthenticatedTransportRoute,
   AuthenticatedAdminAnnouncementsRoute: AuthenticatedAdminAnnouncementsRoute,
   AuthenticatedAdminClassesRoute: AuthenticatedAdminClassesRoute,
