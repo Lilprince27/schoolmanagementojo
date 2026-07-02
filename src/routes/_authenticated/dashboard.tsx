@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
+import { useMembership } from "@/lib/hooks/use-membership";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
-import { useQuery } from "@tanstack/react-query";
-import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone, Check, X, Inbox } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
