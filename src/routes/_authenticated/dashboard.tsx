@@ -16,15 +16,21 @@ function Dashboard() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: roles, isLoading, isFetching, refetch } = useRoles(user?.id);
+  const { data: membership } = useMembership(user?.id, profile?.email);
   const role = primaryRole(roles);
+  const isAdminView = membership?.isSchoolAdmin || membership?.isPlatformAdmin || role === "super_admin";
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-extrabold">Welcome back, {profile?.full_name?.split(" ")[0] || "there"} 👋</h1>
-        <p className="text-muted-foreground">Signed in as {role ? ROLE_LABELS[role] : isLoading ? "…" : "no role yet"}</p>
+        <p className="text-muted-foreground">
+          {membership?.isPlatformAdmin ? "Platform administrator" : role ? ROLE_LABELS[role] : isLoading ? "…" : "Awaiting approval"}
+          {membership?.schoolName && ` · ${membership.schoolName}`}
+        </p>
       </div>
 
+      {isAdminView && membership?.schoolId && <JoinRequestsPanel schoolId={membership.schoolId} />}
       {role === "super_admin" && <AdminDashboard />}
       {isTeacher(role) && <TeacherDashboard userId={user!.id} />}
       {role === "parent" && <ParentDashboard userId={user!.id} />}
