@@ -135,12 +135,14 @@ function ResultsTable({ results }: { results: any[] }) {
   );
 }
 
-function ReportCard({ student, results, present, absent, late }: { student: any; results: any[]; present: number; absent: number; late: number }) {
+function ReportCard({ student, results, present, absent, late, branding }: { student: any; results: any[]; present: number; absent: number; late: number; branding: any }) {
   const [term, setTerm] = useState<"first" | "second" | "third">("first");
   const filtered = results.filter((r) => r.term === term);
   const totals = filtered.reduce((a, r) => a + Number(r.total), 0);
   const avg = filtered.length ? (totals / filtered.length).toFixed(1) : "—";
   const overall = filtered.length ? (totals / filtered.length >= 70 ? "A" : totals / filtered.length >= 60 ? "B" : totals / filtered.length >= 50 ? "C" : totals / filtered.length >= 45 ? "D" : totals / filtered.length >= 40 ? "E" : "F") : "—";
+  const primary = branding?.primary_color || "#4f46e5";
+  const schoolName = branding?.name || "EduConnect Academy";
 
   return (
     <div>
@@ -156,9 +158,19 @@ function ReportCard({ student, results, present, absent, late }: { student: any;
       </div>
 
       <div className="bg-white text-slate-900 rounded-2xl border border-border p-10 print:rounded-none print:border-0 print:p-12 print:shadow-none shadow-pop max-w-4xl mx-auto">
-        <div className="text-center border-b-2 border-slate-200 pb-4">
-          <h1 className="text-3xl font-extrabold">EduConnect Academy</h1>
-          <p className="text-slate-500">Student Report Card</p>
+        <div className="h-2 rounded-full mb-4" style={{ background: primary }} />
+        <div className="flex items-center gap-4 border-b-2 pb-4" style={{ borderColor: primary }}>
+          {branding?.logo_url ? (
+            <img src={branding.logo_url} alt="" className="h-16 w-16 rounded object-cover" />
+          ) : (
+            <div className="h-16 w-16 rounded flex items-center justify-center text-white font-bold text-2xl" style={{ background: primary }}>{schoolName[0]}</div>
+          )}
+          <div className="flex-1 text-center">
+            <h1 className="text-3xl font-extrabold" style={{ color: primary }}>{schoolName}</h1>
+            {branding?.motto && <p className="italic text-slate-500 text-sm">“{branding.motto}”</p>}
+            <p className="text-slate-500">Student Report Card</p>
+          </div>
+          <div className="w-16" />
         </div>
         <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
           <Field label="Student" value={student.full_name} />
