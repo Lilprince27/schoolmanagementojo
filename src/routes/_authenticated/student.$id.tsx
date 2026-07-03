@@ -82,7 +82,8 @@ function StudentDetail() {
           <ResultsTable results={results ?? []} />
         </TabsContent>
         <TabsContent value="report" className="mt-4">
-          <ReportCard student={student} results={results ?? []} present={present} absent={absent} late={late} />
+          <ReportCard student={student} results={results ?? []} present={present} absent={absent} late={late} branding={branding ?? null} />
+        </TabsContent>
         </TabsContent>
       </Tabs>
     </div>
