@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
 import { useMembership } from "@/lib/hooks/use-membership";
+import { useSchoolBranding } from "@/lib/hooks/use-branding";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,16 +49,23 @@ function AuthedShell() {
     router.navigate({ to: "/auth", replace: true });
   }
 
+  const { data: branding } = useSchoolBranding(membership?.schoolId ?? null);
   const navItems = buildNav(role, membership);
+  const schoolName = branding?.name ?? membership?.schoolName ?? "EduConnect";
+  const logoUrl = branding?.logo_url ?? null;
 
   return (
     <div className="min-h-screen flex bg-background">
       <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-sidebar">
         <div className="h-16 px-6 flex items-center gap-2 border-b border-sidebar-border">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
-            <GraduationCap className="h-5 w-5" />
-          </span>
-          <span className="font-bold">EduConnect</span>
+          {logoUrl ? (
+            <img src={logoUrl} alt={schoolName} className="h-9 w-9 rounded-xl object-cover" />
+          ) : (
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+          )}
+          <span className="font-bold truncate">{schoolName}</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => (
@@ -87,7 +95,8 @@ function AuthedShell() {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center justify-between px-6 lg:hidden">
           <Link to="/dashboard" className="flex items-center gap-2 font-bold">
-            <GraduationCap className="h-5 w-5 text-primary" /> EduConnect
+            {logoUrl ? <img src={logoUrl} alt="" className="h-6 w-6 rounded object-cover" /> : <GraduationCap className="h-5 w-5 text-primary" />}
+            {schoolName}
           </Link>
           <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
         </header>
