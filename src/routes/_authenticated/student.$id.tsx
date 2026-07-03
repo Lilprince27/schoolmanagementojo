@@ -37,10 +37,15 @@ function StudentDetail() {
   return (
     <div className="space-y-6">
       <div className="card-soft p-6 flex items-center gap-4">
-        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary"><GraduationCap /></span>
+        {branding?.logo_url ? (
+          <img src={branding.logo_url} alt="" className="h-14 w-14 rounded-2xl object-cover" />
+        ) : (
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary"><GraduationCap /></span>
+        )}
         <div className="flex-1">
           <h1 className="text-2xl font-extrabold">{student.full_name}</h1>
           <p className="text-sm text-muted-foreground">{student.school_id} • {(student as any).classes?.name ?? "No class"} • {(student as any).academic_sessions?.name ?? "—"}</p>
+          {branding?.name && <p className="text-xs text-muted-foreground">{branding.name}</p>}
         </div>
       </div>
 
