@@ -49,16 +49,23 @@ function AuthedShell() {
     router.navigate({ to: "/auth", replace: true });
   }
 
+  const { data: branding } = useSchoolBranding(membership?.schoolId ?? null);
   const navItems = buildNav(role, membership);
+  const schoolName = branding?.name ?? membership?.schoolName ?? "EduConnect";
+  const logoUrl = branding?.logo_url ?? null;
 
   return (
     <div className="min-h-screen flex bg-background">
       <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-sidebar">
         <div className="h-16 px-6 flex items-center gap-2 border-b border-sidebar-border">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
-            <GraduationCap className="h-5 w-5" />
-          </span>
-          <span className="font-bold">EduConnect</span>
+          {logoUrl ? (
+            <img src={logoUrl} alt={schoolName} className="h-9 w-9 rounded-xl object-cover" />
+          ) : (
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+          )}
+          <span className="font-bold truncate">{schoolName}</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => (
