@@ -579,15 +579,22 @@ export type Database = {
           address: string | null
           admin_email: string | null
           admin_profile_id: string | null
+          banner_url: string | null
           code: string | null
           country: string
           created_at: string
           created_by: string | null
           email: string | null
+          favicon_url: string | null
           id: string
           lga: string
+          login_background_url: string | null
+          logo_url: string | null
+          motto: string | null
           name: string
           phone: string | null
+          primary_color: string | null
+          secondary_color: string | null
           state: string
           updated_at: string
         }
@@ -595,15 +602,22 @@ export type Database = {
           address?: string | null
           admin_email?: string | null
           admin_profile_id?: string | null
+          banner_url?: string | null
           code?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
           email?: string | null
+          favicon_url?: string | null
           id?: string
           lga: string
+          login_background_url?: string | null
+          logo_url?: string | null
+          motto?: string | null
           name: string
           phone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           state: string
           updated_at?: string
         }
@@ -611,15 +625,22 @@ export type Database = {
           address?: string | null
           admin_email?: string | null
           admin_profile_id?: string | null
+          banner_url?: string | null
           code?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
           email?: string | null
+          favicon_url?: string | null
           id?: string
           lga?: string
+          login_background_url?: string | null
+          logo_url?: string | null
+          motto?: string | null
           name?: string
           phone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           state?: string
           updated_at?: string
         }
