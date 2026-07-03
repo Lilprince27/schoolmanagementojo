@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Printer, GraduationCap } from "lucide-react";
 import { StatusBadge } from "./student.results";
+import { useSchoolBranding } from "@/lib/hooks/use-branding";
 
 export const Route = createFileRoute("/_authenticated/student/$id")({ component: StudentDetail });
 
