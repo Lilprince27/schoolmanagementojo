@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
 import { useMembership } from "@/lib/hooks/use-membership";
+import { useSchoolBranding } from "@/lib/hooks/use-branding";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
