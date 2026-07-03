@@ -95,7 +95,8 @@ function AuthedShell() {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center justify-between px-6 lg:hidden">
           <Link to="/dashboard" className="flex items-center gap-2 font-bold">
-            <GraduationCap className="h-5 w-5 text-primary" /> EduConnect
+            {logoUrl ? <img src={logoUrl} alt="" className="h-6 w-6 rounded object-cover" /> : <GraduationCap className="h-5 w-5 text-primary" />}
+            {schoolName}
           </Link>
           <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
         </header>
