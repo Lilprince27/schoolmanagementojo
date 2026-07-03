@@ -17,7 +17,7 @@ function StudentDetail() {
     queryKey: ["student", id],
     queryFn: async () => (await supabase.from("students").select("*, classes(name), academic_sessions(name,term)").eq("id", id).maybeSingle()).data,
   });
-  const { data: branding } = useSchoolBranding((student as any)?.school_id_ref ?? (student as any)?.school_id ?? null);
+  const { data: branding } = useSchoolBranding((student as any)?.school_org_id ?? null);
   const { data: attendance } = useQuery({
     queryKey: ["student-att", id],
     queryFn: async () => (await supabase.from("attendance").select("*").eq("student_id", id).order("date", { ascending: false }).limit(60)).data ?? [],
