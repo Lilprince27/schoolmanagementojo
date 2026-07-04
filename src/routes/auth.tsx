@@ -10,8 +10,18 @@ import { GraduationCap, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — EduConnect" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: AuthPage,
 });
+
+function safeNext(next: string | undefined): string {
+  if (!next) return "/dashboard";
+  // Only allow same-origin relative paths.
+  if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
+  return next;
+}
 
 function AuthPage() {
   const [email, setEmail] = useState("");
@@ -19,36 +29,39 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const target = safeNext(next);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) window.location.assign(target);
     });
-  }, [navigate]);
+  }, [target]);
 
-  async function goToDashboard() {
+  async function goToTarget() {
     for (let i = 0; i < 10; i++) {
       const { data } = await supabase.auth.getSession();
       if (data.session) break;
       await new Promise((r) => setTimeout(r, 100));
     }
-    navigate({ to: "/dashboard", replace: true });
+    window.location.assign(target);
   }
 
   async function google() {
     setLoading(true);
     try {
       const res = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/dashboard",
+        redirect_uri: window.location.origin + target,
       });
       if (res.error) return toast.error(res.error.message ?? "Google sign-in failed");
-      if (!res.redirected) await goToDashboard();
+      if (!res.redirected) await goToTarget();
     } catch (err: any) {
       toast.error(err?.message ?? "Google sign-in failed");
     } finally {
       setLoading(false);
     }
   }
+
 
   async function emailSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -66,7 +79,7 @@ function AuthPage() {
       } else {
         toast.success("Welcome back");
       }
-      await goToDashboard();
+      await goToTarget();
     } catch (err: any) {
       toast.error(err?.message ?? "Sign-in failed");
     } finally {
