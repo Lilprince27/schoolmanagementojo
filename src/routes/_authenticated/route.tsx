@@ -26,7 +26,7 @@ function AuthedShell() {
   const { user } = useSession();
   const { data: roles } = useRoles(user?.id);
   const { data: profile } = useProfile(user?.id);
-  const { data: membership } = useMembership(user?.id, profile?.email);
+  const { data: membership } = useMembership(user?.id, user?.email ?? profile?.email);
   const role = primaryRole(roles);
   const router = useRouter();
   const location = useLocation();

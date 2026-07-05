@@ -14,8 +14,8 @@ export type Membership = {
 
 export function useMembership(userId: string | undefined, email: string | undefined | null) {
   return useQuery<Membership>({
-    queryKey: ["membership", userId],
-    enabled: !!userId,
+    queryKey: ["membership", userId, email?.toLowerCase() ?? null],
+    enabled: !!userId && !!email,
     queryFn: async () => {
       const isPlatformAdmin = !!email && email.toLowerCase() === PLATFORM_ADMIN_EMAIL;
 
