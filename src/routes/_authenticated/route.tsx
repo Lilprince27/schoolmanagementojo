@@ -153,6 +153,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
 
   if (membership?.isPlatformAdmin) {
     base.push({ to: "/platform", label: "Schools", icon: ShieldCheck });
+    return base;
   }
 
   // Unassigned (not platform admin, no school): only show onboarding
