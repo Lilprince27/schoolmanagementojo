@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useRoles, useProfile } from "@/lib/hooks/use-auth";
 import { useMembership } from "@/lib/hooks/use-membership";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone, Check, X, Inbox } from "lucide-react";
+import { Users, GraduationCap, UserSquare2, ClipboardCheck, FileBarChart, Megaphone, Check, X, Inbox, School, ShieldCheck, UserPlus, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -16,9 +16,10 @@ function Dashboard() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: roles, isLoading, isFetching, refetch } = useRoles(user?.id);
-  const { data: membership } = useMembership(user?.id, profile?.email);
+  const { data: membership, isLoading: membershipLoading } = useMembership(user?.id, user?.email ?? profile?.email);
   const role = primaryRole(roles);
-  const isAdminView = membership?.isSchoolAdmin || membership?.isPlatformAdmin || role === "super_admin";
+  const isPlatformAdmin = !!membership?.isPlatformAdmin;
+  const isSchoolAdminView = !isPlatformAdmin && (membership?.isSchoolAdmin || role === "super_admin");
 
   return (
     <div className="space-y-8">
@@ -30,12 +31,18 @@ function Dashboard() {
         </p>
       </div>
 
-      {isAdminView && membership?.schoolId && <JoinRequestsPanel schoolId={membership.schoolId} />}
-      {role === "super_admin" && <AdminDashboard />}
-      {isTeacher(role) && <TeacherDashboard userId={user!.id} />}
-      {role === "parent" && <ParentDashboard userId={user!.id} />}
-      {role === "student" && <StudentDashboard userId={user!.id} />}
-      {!role && !isLoading && (
+      {isPlatformAdmin ? (
+        <PlatformAdminDashboard />
+      ) : (
+        <>
+          {isSchoolAdminView && membership?.schoolId && <JoinRequestsPanel schoolId={membership.schoolId} />}
+          {isSchoolAdminView && <AdminDashboard />}
+          {isTeacher(role) && <TeacherDashboard userId={user!.id} />}
+          {role === "parent" && <ParentDashboard userId={user!.id} />}
+          {role === "student" && <StudentDashboard userId={user!.id} />}
+        </>
+      )}
+      {!isPlatformAdmin && !role && !isLoading && !membershipLoading && (
         <div className="card-soft p-6">
           <h2 className="font-semibold">Access role is still being set up</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -51,6 +58,100 @@ function Dashboard() {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function PlatformAdminDashboard() {
+  const { data: overview } = useQuery({
+    queryKey: ["platform-overview"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("schools")
+        .select("id, name, admin_email, admin_profile_id, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const schools = data ?? [];
+      return {
+        schools,
+        assignedAdmins: schools.filter((school) => !!school.admin_email).length,
+        activeAdmins: schools.filter((school) => !!school.admin_profile_id).length,
+      };
+    },
+  });
+
+  const schools = overview?.schools ?? [];
+  const latestSchools = schools.slice(0, 4);
+  const cards = [
+    { label: "Schools", value: overview ? schools.length : "—", icon: School },
+    { label: "Assigned admins", value: overview ? overview.assignedAdmins : "—", icon: UserPlus },
+    { label: "Active admins", value: overview ? overview.activeAdmins : "—", icon: ShieldCheck },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <section className="grid gap-4 sm:grid-cols-3">
+        {cards.map((card) => (
+          <div key={card.label} className="card-soft p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{card.label}</span>
+              <card.icon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="mt-2 text-3xl font-extrabold">{card.value}</div>
+          </div>
+        ))}
+      </section>
+
+      <section className="card-soft p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Super admin controls</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Create schools, upload branding, and assign each school administrator.</p>
+          </div>
+          <Button asChild>
+            <Link to="/platform"><School className="h-4 w-4" /> Open schools</Link>
+          </Button>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <ActionCard icon={School} title="Create school" text="Add a school profile with address and contact details." />
+          <ActionCard icon={Palette} title="Brand school" text="Set logo, primary color, secondary color and motto." />
+          <ActionCard icon={UserPlus} title="Assign admin" text="Enter the principal or director Gmail for that school." />
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-semibold">Recent schools</h2>
+          <Link to="/platform" className="text-sm font-medium text-primary hover:underline">Manage all</Link>
+        </div>
+        <div className="space-y-3">
+          {latestSchools.map((school) => (
+            <div key={school.id} className="card-soft p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-semibold">{school.name}</div>
+                <div className="text-sm text-muted-foreground">{school.admin_email ? `Admin: ${school.admin_email}` : "No school admin assigned"}</div>
+              </div>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/platform">Manage</Link>
+              </Button>
+            </div>
+          ))}
+          {overview && latestSchools.length === 0 && (
+            <div className="card-soft p-5 text-sm text-muted-foreground">No schools yet. Open schools to create the first one.</div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ActionCard({ icon: Icon, title, text }: { icon: any; title: string; text: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary p-4">
+      <Icon className="h-5 w-5 text-primary" />
+      <h3 className="mt-3 font-semibold">{title}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }
