@@ -140,7 +140,7 @@ type NavItem = { to: string; label: string; icon: any };
 
 function NavLinks({ items }: { items: NavItem[] }) {
   return items.map((item) => (
-    <Link key={item.to} to={item.to}
+    <Link key={`${item.to}-${item.label}`} to={item.to}
       className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
       activeProps={{ className: "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground" }}>
       <item.icon className="h-4 w-4" /> {item.label}
