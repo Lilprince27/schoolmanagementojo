@@ -7,8 +7,11 @@ import { useSchoolBranding } from "@/lib/hooks/use-branding";
 import { primaryRole, ROLE_LABELS, isTeacher } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import {
+  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -68,13 +71,7 @@ function AuthedShell() {
           <span className="font-bold truncate">{schoolName}</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.to} to={item.to}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-              activeProps={{ className: "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground" }}>
-              <item.icon className="h-4 w-4" /> {item.label}
-            </Link>
-          ))}
+          <NavLinks items={navItems} />
         </nav>
         <div className="p-3 border-t border-sidebar-border">
           <div className="px-3 py-2">
@@ -93,12 +90,43 @@ function AuthedShell() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center justify-between px-6 lg:hidden">
-          <Link to="/dashboard" className="flex items-center gap-2 font-bold">
+        <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center justify-between px-4 lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Open navigation">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation</SheetTitle>
+                <SheetDescription>Open school administration areas</SheetDescription>
+              </SheetHeader>
+              <div className="h-16 px-5 flex items-center gap-2 border-b border-border">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={schoolName} className="h-9 w-9 rounded-xl object-cover" />
+                ) : (
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
+                    <GraduationCap className="h-5 w-5" />
+                  </span>
+                )}
+                <span className="font-bold truncate">{schoolName}</span>
+              </div>
+              <nav className="p-3 space-y-1">
+                <NavLinks items={navItems} />
+              </nav>
+              <div className="p-3 border-t border-border">
+                <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <Link to={membership?.isPlatformAdmin ? "/platform" : "/dashboard"} className="flex min-w-0 items-center gap-2 font-bold">
             {logoUrl ? <img src={logoUrl} alt="" className="h-6 w-6 rounded object-cover" /> : <GraduationCap className="h-5 w-5 text-primary" />}
-            {schoolName}
+            <span className="truncate">{schoolName}</span>
           </Link>
-          <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" aria-label="Sign out" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
         </header>
         <main className="flex-1 p-6 lg:p-10 max-w-7xl w-full mx-auto">
           <Outlet />
@@ -109,6 +137,16 @@ function AuthedShell() {
 }
 
 type NavItem = { to: string; label: string; icon: any };
+
+function NavLinks({ items }: { items: NavItem[] }) {
+  return items.map((item) => (
+    <Link key={item.to} to={item.to}
+      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
+      activeProps={{ className: "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground" }}>
+      <item.icon className="h-4 w-4" /> {item.label}
+    </Link>
+  ));
+}
 
 function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<typeof useMembership>["data"]): NavItem[] {
   const base: NavItem[] = [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }];
