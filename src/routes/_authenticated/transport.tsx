@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bus, Plus, Trash2, Route as RouteIcon, Users, Wallet, UserCog, MapPin, Pencil, Archive, Send } from "lucide-react";
+import { Bus, Plus, Trash2, Route as RouteIcon, Users, Wallet, UserCog, MapPin, Pencil, Archive, Send, Wrench, AlertTriangle, FileDown, CheckCircle2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { inviteDriver } from "@/lib/api/transport.functions";
 
@@ -63,12 +63,18 @@ function TransportPage() {
           <TabsTrigger value="routes"><RouteIcon className="h-4 w-4 mr-1" /> Routes</TabsTrigger>
           <TabsTrigger value="assignments"><Users className="h-4 w-4 mr-1" /> Assignments</TabsTrigger>
           <TabsTrigger value="fees"><Wallet className="h-4 w-4 mr-1" /> Fees</TabsTrigger>
+          <TabsTrigger value="maintenance"><Wrench className="h-4 w-4 mr-1" /> Maintenance</TabsTrigger>
+          <TabsTrigger value="emergency"><AlertTriangle className="h-4 w-4 mr-1" /> Emergency</TabsTrigger>
+          <TabsTrigger value="reports"><FileDown className="h-4 w-4 mr-1" /> Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="buses"><BusesTab schoolId={school.id} /></TabsContent>
         <TabsContent value="drivers"><DriversTab schoolId={school.id} /></TabsContent>
         <TabsContent value="routes"><RoutesTab schoolId={school.id} /></TabsContent>
         <TabsContent value="assignments"><AssignmentsTab /></TabsContent>
         <TabsContent value="fees"><FeesTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="maintenance"><MaintenanceTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="emergency"><EmergencyTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="reports"><ReportsTab schoolId={school.id} /></TabsContent>
       </Tabs>
     </div>
   );
@@ -849,6 +855,371 @@ function FeesTab({ schoolId }: { schoolId: string }) {
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------ MAINTENANCE ------------------ */
+
+const MAINT_TYPES = [
+  { v: "oil_change", l: "Oil change" },
+  { v: "tire_replacement", l: "Tire replacement" },
+  { v: "repair", l: "Repair" },
+  { v: "inspection", l: "Inspection" },
+  { v: "insurance_renewal", l: "Insurance renewal" },
+  { v: "license_renewal", l: "License renewal" },
+  { v: "other", l: "Other" },
+];
+
+function MaintenanceTab({ schoolId }: { schoolId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<any>({
+    bus_id: "", maintenance_type: "oil_change", service_date: new Date().toISOString().slice(0, 10),
+    next_due_date: "", cost: "", provider: "", notes: "",
+  });
+
+  const { data: buses } = useQuery({
+    queryKey: ["buses-min"],
+    queryFn: async () => (await anySb.from("buses").select("id,plate_number,model,status,insurance_expiry,inspection_date").order("plate_number")).data ?? [],
+  });
+  const { data: records } = useQuery({
+    queryKey: ["maintenance"],
+    queryFn: async () => (await anySb.from("vehicle_maintenance").select("*, buses:bus_id(plate_number, model)").order("service_date", { ascending: false })).data ?? [],
+  });
+
+  const today = new Date();
+  const soon = new Date(); soon.setDate(today.getDate() + 30);
+  const alerts = useMemo(() => {
+    const list: { bus: string; label: string; when: string; overdue: boolean }[] = [];
+    (buses ?? []).forEach((b: any) => {
+      if (b.insurance_expiry) {
+        const d = new Date(b.insurance_expiry);
+        if (d <= soon) list.push({ bus: b.plate_number, label: "Insurance expiry", when: b.insurance_expiry, overdue: d < today });
+      }
+      if (b.inspection_date) {
+        const d = new Date(b.inspection_date);
+        if (d <= soon) list.push({ bus: b.plate_number, label: "Inspection due", when: b.inspection_date, overdue: d < today });
+      }
+    });
+    (records ?? []).forEach((r: any) => {
+      if (!r.next_due_date) return;
+      const d = new Date(r.next_due_date);
+      if (d <= soon) list.push({ bus: r.buses?.plate_number ?? "—", label: `${(MAINT_TYPES.find((t) => t.v === r.maintenance_type)?.l) ?? r.maintenance_type} due`, when: r.next_due_date, overdue: d < today });
+    });
+    return list;
+  }, [buses, records]);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.bus_id) return toast.error("Choose a bus");
+    const payload: any = {
+      school_id: schoolId,
+      bus_id: form.bus_id,
+      maintenance_type: form.maintenance_type,
+      service_date: form.service_date,
+      next_due_date: form.next_due_date || null,
+      cost: form.cost ? Number(form.cost) : null,
+      provider: form.provider || null,
+      notes: form.notes || null,
+    };
+    const { error } = await anySb.from("vehicle_maintenance").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success("Maintenance logged");
+    setOpen(false);
+    setForm({ bus_id: "", maintenance_type: "oil_change", service_date: new Date().toISOString().slice(0, 10), next_due_date: "", cost: "", provider: "", notes: "" });
+    qc.invalidateQueries({ queryKey: ["maintenance"] });
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Delete this record?")) return;
+    const { error } = await anySb.from("vehicle_maintenance").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["maintenance"] });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-lg">Vehicle maintenance</h2>
+          <p className="text-sm text-muted-foreground">Log servicing and track upcoming due dates.</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> Log service</Button></DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader><DialogTitle>Log maintenance</DialogTitle></DialogHeader>
+            <form onSubmit={save} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label>Bus</Label>
+                  <Select value={form.bus_id} onValueChange={(v) => setForm({ ...form, bus_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select bus" /></SelectTrigger>
+                    <SelectContent>
+                      {(buses ?? []).map((b: any) => <SelectItem key={b.id} value={b.id}>{b.plate_number} — {b.model}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Type</Label>
+                  <Select value={form.maintenance_type} onValueChange={(v) => setForm({ ...form, maintenance_type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{MAINT_TYPES.map((t) => <SelectItem key={t.v} value={t.v}>{t.l}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Cost (₦)</Label><Input type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} /></div>
+                <div><Label>Service date</Label><Input type="date" value={form.service_date} onChange={(e) => setForm({ ...form, service_date: e.target.value })} required /></div>
+                <div><Label>Next due</Label><Input type="date" value={form.next_due_date} onChange={(e) => setForm({ ...form, next_due_date: e.target.value })} /></div>
+                <div className="col-span-2"><Label>Provider / Workshop</Label><Input value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value })} /></div>
+                <div className="col-span-2"><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+              </div>
+              <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {alerts.length > 0 && (
+        <div className="card-soft p-4">
+          <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-warning" /> Upcoming & overdue</h3>
+          <div className="grid gap-2 md:grid-cols-2">
+            {alerts.map((a, i) => (
+              <div key={i} className={`text-sm rounded-md border p-2 ${a.overdue ? "border-destructive/40 bg-destructive/5" : "border-border bg-muted/30"}`}>
+                <div className="font-medium">{a.bus} · {a.label}</div>
+                <div className="text-xs text-muted-foreground">{a.overdue ? "Overdue since " : "Due "} {a.when}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="card-soft overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/40 text-left">
+            <tr><th className="px-4 py-2">Bus</th><th className="px-4 py-2">Type</th><th className="px-4 py-2">Service</th><th className="px-4 py-2">Next due</th><th className="px-4 py-2">Cost</th><th className="px-4 py-2">Provider</th><th className="px-4 py-2"></th></tr>
+          </thead>
+          <tbody>
+            {(records ?? []).map((r: any) => (
+              <tr key={r.id} className="border-t border-border">
+                <td className="px-4 py-2">{r.buses?.plate_number}<div className="text-xs text-muted-foreground">{r.buses?.model}</div></td>
+                <td className="px-4 py-2 capitalize text-xs">{MAINT_TYPES.find((t) => t.v === r.maintenance_type)?.l ?? r.maintenance_type}</td>
+                <td className="px-4 py-2">{r.service_date}</td>
+                <td className="px-4 py-2">{r.next_due_date || "—"}</td>
+                <td className="px-4 py-2">{r.cost ? `₦${Number(r.cost).toLocaleString()}` : "—"}</td>
+                <td className="px-4 py-2 text-xs">{r.provider || "—"}</td>
+                <td className="px-4 py-2 text-right"><Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button></td>
+              </tr>
+            ))}
+            {(records ?? []).length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground text-sm">No maintenance records yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------ EMERGENCY ------------------ */
+
+const EMG_TYPES = [
+  { v: "general", l: "General" },
+  { v: "accident", l: "Accident" },
+  { v: "breakdown", l: "Breakdown" },
+  { v: "medical", l: "Medical" },
+  { v: "security", l: "Security" },
+  { v: "other", l: "Other" },
+];
+
+function EmergencyTab({ schoolId }: { schoolId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<any>({ bus_id: "", alert_type: "general", note: "" });
+
+  const { data: buses } = useQuery({
+    queryKey: ["buses-min"],
+    queryFn: async () => (await anySb.from("buses").select("id,plate_number").order("plate_number")).data ?? [],
+  });
+  const { data: alerts } = useQuery({
+    queryKey: ["emergency-alerts"],
+    queryFn: async () => (await anySb.from("emergency_alerts").select("*, buses:bus_id(plate_number)").order("created_at", { ascending: false })).data ?? [],
+    refetchInterval: 15000,
+  });
+
+  const active = (alerts ?? []).filter((a: any) => !a.resolved_at);
+  const resolved = (alerts ?? []).filter((a: any) => a.resolved_at);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const { error } = await anySb.from("emergency_alerts").insert({
+      school_id: schoolId,
+      bus_id: form.bus_id || null,
+      alert_type: form.alert_type,
+      note: form.note || null,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Alert raised");
+    setOpen(false);
+    setForm({ bus_id: "", alert_type: "general", note: "" });
+    qc.invalidateQueries({ queryKey: ["emergency-alerts"] });
+  }
+
+  async function resolve(id: string) {
+    const { error } = await anySb.from("emergency_alerts").update({ resolved_at: new Date().toISOString() }).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["emergency-alerts"] });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Emergency alerts</h2>
+          <p className="text-sm text-muted-foreground">Active incidents and their resolution history.</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild><Button variant="destructive"><Plus className="h-4 w-4 mr-1" /> Raise alert</Button></DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>Raise emergency alert</DialogTitle></DialogHeader>
+            <form onSubmit={save} className="space-y-3">
+              <div>
+                <Label>Bus (optional)</Label>
+                <Select value={form.bus_id} onValueChange={(v) => setForm({ ...form, bus_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select bus" /></SelectTrigger>
+                  <SelectContent>{(buses ?? []).map((b: any) => <SelectItem key={b.id} value={b.id}>{b.plate_number}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Type</Label>
+                <Select value={form.alert_type} onValueChange={(v) => setForm({ ...form, alert_type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{EMG_TYPES.map((t) => <SelectItem key={t.v} value={t.v}>{t.l}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Note</Label><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="What happened?" /></div>
+              <DialogFooter><Button type="submit" variant="destructive">Raise alert</Button></DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-sm mb-2">Active</h3>
+        {active.length === 0 && <div className="card-soft p-4 text-sm text-muted-foreground">No active alerts. All clear.</div>}
+        <div className="grid gap-2 md:grid-cols-2">
+          {active.map((a: any) => (
+            <div key={a.id} className="card-soft p-4 border-destructive/40">
+              <div className="flex items-center justify-between">
+                <Badge variant="destructive" className="capitalize">{a.alert_type}</Badge>
+                <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+              </div>
+              <div className="mt-2 text-sm font-medium">{a.buses?.plate_number ?? "Unassigned bus"}</div>
+              {a.note && <div className="text-sm text-muted-foreground mt-1">{a.note}</div>}
+              <Button size="sm" className="mt-3" onClick={() => resolve(a.id)}><CheckCircle2 className="h-4 w-4 mr-1" /> Mark resolved</Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {resolved.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-sm mb-2">History</h3>
+          <div className="card-soft overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-left"><tr><th className="px-4 py-2">When</th><th className="px-4 py-2">Bus</th><th className="px-4 py-2">Type</th><th className="px-4 py-2">Note</th><th className="px-4 py-2">Resolved</th></tr></thead>
+              <tbody>
+                {resolved.slice(0, 50).map((a: any) => (
+                  <tr key={a.id} className="border-t border-border">
+                    <td className="px-4 py-2 text-xs">{new Date(a.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-2">{a.buses?.plate_number ?? "—"}</td>
+                    <td className="px-4 py-2 capitalize text-xs">{a.alert_type}</td>
+                    <td className="px-4 py-2 text-xs">{a.note || "—"}</td>
+                    <td className="px-4 py-2 text-xs">{new Date(a.resolved_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------ REPORTS ------------------ */
+
+function ReportsTab({ schoolId: _schoolId }: { schoolId: string }) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  function download(name: string, rows: any[]) {
+    if (!rows.length) return toast.info("Nothing to export");
+    const headers = Object.keys(rows[0]);
+    const escape = (v: any) => {
+      if (v === null || v === undefined) return "";
+      const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function run(name: string, fn: () => Promise<any[]>) {
+    setBusy(name);
+    try {
+      const rows = await fn();
+      download(name, rows);
+    } catch (e: any) {
+      toast.error(e.message ?? "Export failed");
+    } finally { setBusy(null); }
+  }
+
+  const cards = [
+    {
+      key: "buses", title: "Fleet inventory", desc: "All buses with status, driver, and compliance dates.",
+      run: () => run("buses", async () => (await anySb.from("buses").select("plate_number,registration_no,model,vehicle_type,capacity,status,insurance_expiry,inspection_date,gps_enabled")).data ?? []),
+    },
+    {
+      key: "drivers", title: "Driver roster", desc: "Drivers, licences, assigned bus.",
+      run: () => run("drivers", async () => (await anySb.from("drivers").select("full_name,phone,email,license_no,license_expiry,employment_status,assigned_bus_id")).data ?? []),
+    },
+    {
+      key: "assignments", title: "Student assignments", desc: "Which students ride which route.",
+      run: () => run("assignments", async () => (await anySb.from("student_bus_assignments").select("student_id,route_id,pickup_stop_id,dropoff_stop_id,pickup_time,seat_number,status")).data ?? []),
+    },
+    {
+      key: "fees", title: "Fee payments", desc: "Full payment ledger.",
+      run: () => run("fees", async () => (await anySb.from("bus_fee_payments").select("*")).data ?? []),
+    },
+    {
+      key: "maintenance", title: "Maintenance log", desc: "Servicing history and costs.",
+      run: () => run("maintenance", async () => (await anySb.from("vehicle_maintenance").select("*")).data ?? []),
+    },
+    {
+      key: "emergency", title: "Emergency incidents", desc: "All alerts, resolved and active.",
+      run: () => run("emergency", async () => (await anySb.from("emergency_alerts").select("*")).data ?? []),
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-semibold text-lg">Reports</h2>
+        <p className="text-sm text-muted-foreground">Export transport data as CSV for finance and audit.</p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {cards.map((c) => (
+          <div key={c.key} className="card-soft p-4">
+            <h3 className="font-medium">{c.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{c.desc}</p>
+            <Button size="sm" className="mt-3" variant="outline" disabled={busy === c.key} onClick={c.run}>
+              <FileDown className="h-4 w-4 mr-1" /> {busy === c.key ? "Preparing…" : "Export CSV"}
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );

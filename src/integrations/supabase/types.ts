@@ -608,6 +608,86 @@ export type Database = {
           },
         ]
       }
+      emergency_alerts: {
+        Row: {
+          alert_type: string
+          bus_id: string | null
+          created_at: string
+          created_by: string | null
+          driver_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          school_id: string
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          alert_type?: string
+          bus_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          school_id: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          bus_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          school_id?: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_alerts_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_alerts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_alerts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_alerts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "bus_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       join_requests: {
         Row: {
           created_at: string
@@ -1385,6 +1465,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vehicle_maintenance: {
+        Row: {
+          bus_id: string
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          maintenance_type: string
+          next_due_date: string | null
+          notes: string | null
+          provider: string | null
+          school_id: string
+          service_date: string
+          updated_at: string
+        }
+        Insert: {
+          bus_id: string
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          maintenance_type: string
+          next_due_date?: string | null
+          notes?: string | null
+          provider?: string | null
+          school_id: string
+          service_date: string
+          updated_at?: string
+        }
+        Update: {
+          bus_id?: string
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          maintenance_type?: string
+          next_due_date?: string | null
+          notes?: string | null
+          provider?: string | null
+          school_id?: string
+          service_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_maintenance_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_maintenance_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
