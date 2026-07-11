@@ -37,6 +37,7 @@ function Dashboard() {
         <>
           {isSchoolAdminView && membership?.schoolId && <JoinRequestsPanel schoolId={membership.schoolId} />}
           {isSchoolAdminView && <AdminDashboard />}
+          {isSchoolAdminView && <TransportSnapshot />}
           {isTeacher(role) && <TeacherDashboard userId={user!.id} />}
           {role === "parent" && <ParentDashboard userId={user!.id} />}
           {role === "student" && <StudentDashboard userId={user!.id} />}
