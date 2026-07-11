@@ -321,3 +321,58 @@ function Stat({ label, value, icon: Icon }: { label: string; value: any; icon: a
     </div>
   );
 }
+
+function TransportSnapshot() {
+  const anySb = supabase as any;
+  const { data } = useQuery({
+    queryKey: ["transport-snapshot"],
+    queryFn: async () => {
+      const soon = new Date(); soon.setDate(soon.getDate() + 30);
+      const soonISO = soon.toISOString().slice(0, 10);
+      const [{ count: totalBuses }, { count: activeBuses }, { count: drivers }, { count: activeAlerts }, { data: maintDue }, { data: paidRows }] = await Promise.all([
+        anySb.from("buses").select("id", { count: "exact", head: true }),
+        anySb.from("buses").select("id", { count: "exact", head: true }).eq("status", "active"),
+        anySb.from("drivers").select("id", { count: "exact", head: true }),
+        anySb.from("emergency_alerts").select("id", { count: "exact", head: true }).is("resolved_at", null),
+        anySb.from("vehicle_maintenance").select("id,next_due_date").lte("next_due_date", soonISO),
+        anySb.from("bus_fee_payments").select("amount,status").eq("status", "paid"),
+      ]);
+      const revenue = (paidRows ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+      return {
+        totalBuses: totalBuses ?? 0,
+        activeBuses: activeBuses ?? 0,
+        drivers: drivers ?? 0,
+        activeAlerts: activeAlerts ?? 0,
+        maintDue: (maintDue ?? []).length,
+        revenue,
+      };
+    },
+  });
+  const items = [
+    { label: "Buses", value: data ? `${data.activeBuses}/${data.totalBuses}` : "—", icon: Bus, hint: "Active / Total" },
+    { label: "Drivers", value: data?.drivers ?? "—", icon: UserSquare2 },
+    { label: "Active alerts", value: data?.activeAlerts ?? "—", icon: AlertTriangle, danger: (data?.activeAlerts ?? 0) > 0 },
+    { label: "Maintenance due", value: data?.maintDue ?? "—", icon: Wrench, danger: (data?.maintDue ?? 0) > 0 },
+    { label: "Bus revenue", value: data ? `₦${Number(data.revenue).toLocaleString()}` : "—", icon: Wallet },
+  ];
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-semibold flex items-center gap-2"><Bus className="h-4 w-4" /> Transport at a glance</h2>
+        <Link to="/transport" className="text-sm text-primary hover:underline">Manage →</Link>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {items.map((s) => (
+          <div key={s.label} className={`card-soft p-5 ${s.danger ? "border-destructive/40" : ""}`}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{s.label}</span>
+              <s.icon className={`h-4 w-4 ${s.danger ? "text-destructive" : "text-primary"}`} />
+            </div>
+            <div className="mt-2 text-2xl font-extrabold">{s.value}</div>
+            {s.hint && <div className="text-xs text-muted-foreground mt-1">{s.hint}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
