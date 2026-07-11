@@ -63,12 +63,18 @@ function TransportPage() {
           <TabsTrigger value="routes"><RouteIcon className="h-4 w-4 mr-1" /> Routes</TabsTrigger>
           <TabsTrigger value="assignments"><Users className="h-4 w-4 mr-1" /> Assignments</TabsTrigger>
           <TabsTrigger value="fees"><Wallet className="h-4 w-4 mr-1" /> Fees</TabsTrigger>
+          <TabsTrigger value="maintenance"><Wrench className="h-4 w-4 mr-1" /> Maintenance</TabsTrigger>
+          <TabsTrigger value="emergency"><AlertTriangle className="h-4 w-4 mr-1" /> Emergency</TabsTrigger>
+          <TabsTrigger value="reports"><FileDown className="h-4 w-4 mr-1" /> Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="buses"><BusesTab schoolId={school.id} /></TabsContent>
         <TabsContent value="drivers"><DriversTab schoolId={school.id} /></TabsContent>
         <TabsContent value="routes"><RoutesTab schoolId={school.id} /></TabsContent>
         <TabsContent value="assignments"><AssignmentsTab /></TabsContent>
         <TabsContent value="fees"><FeesTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="maintenance"><MaintenanceTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="emergency"><EmergencyTab schoolId={school.id} /></TabsContent>
+        <TabsContent value="reports"><ReportsTab schoolId={school.id} /></TabsContent>
       </Tabs>
     </div>
   );
