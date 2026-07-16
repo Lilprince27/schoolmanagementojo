@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu, ShoppingBag
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
