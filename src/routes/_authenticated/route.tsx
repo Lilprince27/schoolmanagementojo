@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu, ShoppingBag
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -169,7 +169,9 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/admin/teachers", label: "Teachers", icon: UserSquare2 },
       { to: "/admin/parents", label: "Parents", icon: Users },
       { to: "/admin/classes", label: "Classes & Subjects", icon: School },
+      { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
       { to: "/transport", label: "School Bus", icon: Bus },
+      { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -182,6 +184,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/teacher/attendance", label: "Attendance", icon: ClipboardCheck },
       { to: "/teacher/results", label: "Results", icon: FileBarChart },
       { to: "/teacher/students", label: "My Students", icon: GraduationCap },
+      { to: "/shop", label: "Shop", icon: ShoppingBag },
     ];
   }
   if (role === "parent") {
@@ -189,6 +192,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       ...base,
       { to: "/parent/children", label: "My Children", icon: Baby },
       { to: "/my-bus", label: "My Bus", icon: Bus },
+      { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/parent/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -198,6 +202,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/student/results", label: "My Results", icon: FileBarChart },
       { to: "/student/attendance", label: "My Attendance", icon: ClipboardCheck },
       { to: "/my-bus", label: "My Bus", icon: Bus },
+      { to: "/shop", label: "Shop", icon: ShoppingBag },
     ];
   }
   return base;
