@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTransportRouteImport } from './routes/_authenticated/transport'
+import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMyBusRouteImport } from './routes/_authenticated/my-bus'
@@ -59,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTransportRoute = AuthenticatedTransportRouteImport.update({
   id: '/transport',
   path: '/transport',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/my-bus': typeof AuthenticatedMyBusRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/platform': typeof AuthenticatedPlatformRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/transport': typeof AuthenticatedTransportRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/my-bus': typeof AuthenticatedMyBusRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/platform': typeof AuthenticatedPlatformRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/transport': typeof AuthenticatedTransportRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/_authenticated/my-bus': typeof AuthenticatedMyBusRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/platform': typeof AuthenticatedPlatformRoute
+  '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/transport': typeof AuthenticatedTransportRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/my-bus'
     | '/onboarding'
     | '/platform'
+    | '/shop'
     | '/transport'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/my-bus'
     | '/onboarding'
     | '/platform'
+    | '/shop'
     | '/transport'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-bus'
     | '/_authenticated/onboarding'
     | '/_authenticated/platform'
+    | '/_authenticated/shop'
     | '/_authenticated/transport'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -408,6 +420,13 @@ declare module '@tanstack/react-router' {
       path: '/transport'
       fullPath: '/transport'
       preLoaderRoute: typeof AuthenticatedTransportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shop': {
+      id: '/_authenticated/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/platform': {
@@ -572,6 +591,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyBusRoute: typeof AuthenticatedMyBusRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
+  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedTransportRoute: typeof AuthenticatedTransportRoute
   AuthenticatedAdminAnnouncementsRoute: typeof AuthenticatedAdminAnnouncementsRoute
   AuthenticatedAdminAttendanceRoute: typeof AuthenticatedAdminAttendanceRoute
@@ -594,6 +614,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyBusRoute: AuthenticatedMyBusRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
+  AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedTransportRoute: AuthenticatedTransportRoute,
   AuthenticatedAdminAnnouncementsRoute: AuthenticatedAdminAnnouncementsRoute,
   AuthenticatedAdminAttendanceRoute: AuthenticatedAdminAttendanceRoute,
