@@ -149,6 +149,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function MyOrdersTab({ userId }: { userId: string }) {
+  const { pay, isPending } = usePay();
   const { data: orders } = useQuery({
     queryKey: ["shop-orders", "mine", userId],
     queryFn: async () => (await supabase.from("shop_orders")
@@ -160,12 +161,17 @@ function MyOrdersTab({ userId }: { userId: string }) {
     <div className="space-y-3">
       {orders.map((o: any) => (
         <div key={o.id} className="card-soft p-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-2 flex-wrap">
             <div>
               <div className="font-semibold">Order #{o.id.slice(0, 8)}</div>
               <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${o.status === "pending" ? "bg-warning text-warning-foreground" : o.status === "completed" ? "bg-success text-success-foreground" : "bg-muted"}`}>{o.status}</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-1 rounded-full ${o.payment_status === "paid" ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"}`}>
+                {o.payment_status === "paid" ? "paid" : "unpaid"}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded-full ${o.status === "pending" ? "bg-warning text-warning-foreground" : o.status === "completed" ? "bg-success text-success-foreground" : "bg-muted"}`}>{o.status}</span>
+            </div>
           </div>
           <ul className="text-sm mt-2 space-y-1">
             {o.shop_order_items?.map((it: any) => (
@@ -175,7 +181,14 @@ function MyOrdersTab({ userId }: { userId: string }) {
               </li>
             ))}
           </ul>
-          <div className="text-right font-bold mt-2">Total: ₦{Number(o.total).toLocaleString()}</div>
+          <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+            <div className="font-bold">Total: ₦{Number(o.total).toLocaleString()}</div>
+            {o.payment_status !== "paid" && o.status !== "cancelled" && (
+              <Button size="sm" disabled={isPending(o.id)} onClick={() => pay({ purpose: "shop", order_id: o.id })}>
+                {isPending(o.id) ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CreditCard className="h-4 w-4 mr-1" />} Pay now
+              </Button>
+            )}
+          </div>
         </div>
       ))}
     </div>
