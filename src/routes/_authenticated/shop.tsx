@@ -50,8 +50,10 @@ function Shop() {
 
 function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
   const qc = useQueryClient();
+  const { pay } = usePay();
   const [cat, setCat] = useState<string>("all");
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [placing, setPlacing] = useState(false);
 
   const { data: products } = useQuery({
     queryKey: ["shop-products", schoolId],
