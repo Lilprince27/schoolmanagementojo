@@ -172,6 +172,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
       { to: "/transport", label: "School Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
+      { to: "/fees", label: "Fees & Payments", icon: Wallet },
       { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -185,6 +186,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/teacher/results", label: "Results", icon: FileBarChart },
       { to: "/teacher/students", label: "My Students", icon: GraduationCap },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
+      { to: "/fees", label: "Fees & Payments", icon: Wallet },
     ];
   }
   if (role === "parent") {
@@ -193,6 +195,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/parent/children", label: "My Children", icon: Baby },
       { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
+      { to: "/fees", label: "Fees & Payments", icon: Wallet },
       { to: "/parent/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -203,6 +206,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/student/attendance", label: "My Attendance", icon: ClipboardCheck },
       { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
+      { to: "/fees", label: "Fees & Payments", icon: Wallet },
     ];
   }
   return base;
