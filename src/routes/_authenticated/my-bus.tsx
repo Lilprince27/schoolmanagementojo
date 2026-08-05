@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/hooks/use-auth";
-import { Bus } from "lucide-react";
+import { usePay } from "@/lib/hooks/use-pay";
+import { Button } from "@/components/ui/button";
+import { Bus, CreditCard, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-bus")({ component: MyBusPage });
 
 function MyBusPage() {
   const { user } = useSession();
+  const { pay, isPending } = usePay();
   const { data, isLoading } = useQuery({
     queryKey: ["my-bus", user?.id],
     queryFn: async () => {
