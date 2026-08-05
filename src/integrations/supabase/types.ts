@@ -688,6 +688,153 @@ export type Database = {
           },
         ]
       }
+      fee_invoices: {
+        Row: {
+          amount: number
+          amount_paid: number
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          fee_structure_id: string | null
+          id: string
+          school_id: string
+          session_id: string | null
+          status: string
+          student_id: string
+          term: Database["public"]["Enums"]["term_type"] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          fee_structure_id?: string | null
+          id?: string
+          school_id: string
+          session_id?: string | null
+          status?: string
+          student_id: string
+          term?: Database["public"]["Enums"]["term_type"] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          fee_structure_id?: string | null
+          id?: string
+          school_id?: string
+          session_id?: string | null
+          status?: string
+          student_id?: string
+          term?: Database["public"]["Enums"]["term_type"] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_invoices_fee_structure_id_fkey"
+            columns: ["fee_structure_id"]
+            isOneToOne: false
+            referencedRelation: "fee_structures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoices_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoices_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "academic_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_structures: {
+        Row: {
+          amount: number
+          class_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          school_id: string
+          session_id: string | null
+          term: Database["public"]["Enums"]["term_type"] | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          school_id: string
+          session_id?: string | null
+          term?: Database["public"]["Enums"]["term_type"] | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          school_id?: string
+          session_id?: string | null
+          term?: Database["public"]["Enums"]["term_type"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_structures_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_structures_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_structures_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "academic_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       join_requests: {
         Row: {
           created_at: string
@@ -822,6 +969,101 @@ export type Database = {
           {
             foreignKeyName: "parents_school_org_id_fkey"
             columns: ["school_org_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          bus_fee_payment_id: string | null
+          channel: string | null
+          created_at: string
+          currency: string
+          fee_invoice_id: string | null
+          id: string
+          metadata: Json
+          order_id: string | null
+          paid_at: string | null
+          payer_id: string
+          payment_link: string | null
+          provider: string
+          provider_tx_id: string | null
+          purpose: string
+          reference: string
+          school_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          bus_fee_payment_id?: string | null
+          channel?: string | null
+          created_at?: string
+          currency?: string
+          fee_invoice_id?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          paid_at?: string | null
+          payer_id: string
+          payment_link?: string | null
+          provider?: string
+          provider_tx_id?: string | null
+          purpose: string
+          reference: string
+          school_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          bus_fee_payment_id?: string | null
+          channel?: string | null
+          created_at?: string
+          currency?: string
+          fee_invoice_id?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          paid_at?: string | null
+          payer_id?: string
+          payment_link?: string | null
+          provider?: string
+          provider_tx_id?: string | null
+          purpose?: string
+          reference?: string
+          school_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_bus_fee_payment_id_fkey"
+            columns: ["bus_fee_payment_id"]
+            isOneToOne: false
+            referencedRelation: "bus_fee_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_fee_invoice_id_fkey"
+            columns: ["fee_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "fee_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "shop_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_school_id_fkey"
+            columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
             referencedColumns: ["id"]
@@ -987,13 +1229,18 @@ export type Database = {
           created_by: string | null
           email: string | null
           favicon_url: string | null
+          flw_subaccount_id: string | null
           id: string
           lga: string
           login_background_url: string | null
           logo_url: string | null
           motto: string | null
           name: string
+          payout_account_name: string | null
+          payout_account_number: string | null
+          payout_bank_code: string | null
           phone: string | null
+          platform_fee_percent: number
           primary_color: string | null
           secondary_color: string | null
           state: string
@@ -1010,13 +1257,18 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           favicon_url?: string | null
+          flw_subaccount_id?: string | null
           id?: string
           lga: string
           login_background_url?: string | null
           logo_url?: string | null
           motto?: string | null
           name: string
+          payout_account_name?: string | null
+          payout_account_number?: string | null
+          payout_bank_code?: string | null
           phone?: string | null
+          platform_fee_percent?: number
           primary_color?: string | null
           secondary_color?: string | null
           state: string
@@ -1033,13 +1285,18 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           favicon_url?: string | null
+          flw_subaccount_id?: string | null
           id?: string
           lga?: string
           login_background_url?: string | null
           logo_url?: string | null
           motto?: string | null
           name?: string
+          payout_account_name?: string | null
+          payout_account_number?: string | null
+          payout_bank_code?: string | null
           phone?: string | null
+          platform_fee_percent?: number
           primary_color?: string | null
           secondary_color?: string | null
           state?: string
@@ -1095,6 +1352,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          payment_status: string
           school_id: string
           status: string
           total: number
@@ -1105,6 +1363,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_status?: string
           school_id: string
           status?: string
           total?: number
@@ -1115,6 +1374,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_status?: string
           school_id?: string
           status?: string
           total?: number
