@@ -18,15 +18,18 @@ import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/s
 import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMyBusRouteImport } from './routes/_authenticated/my-bus'
+import { Route as AuthenticatedFeesRouteImport } from './routes/_authenticated/fees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as AuthenticatedTeacherStudentsRouteImport } from './routes/_authenticated/teacher.students'
 import { Route as AuthenticatedTeacherResultsRouteImport } from './routes/_authenticated/teacher.results'
 import { Route as AuthenticatedTeacherAttendanceRouteImport } from './routes/_authenticated/teacher.attendance'
 import { Route as AuthenticatedStudentResultsRouteImport } from './routes/_authenticated/student.results'
 import { Route as AuthenticatedStudentAttendanceRouteImport } from './routes/_authenticated/student.attendance'
 import { Route as AuthenticatedStudentIdRouteImport } from './routes/_authenticated/student.$id'
+import { Route as AuthenticatedPaymentCallbackRouteImport } from './routes/_authenticated/payment.callback'
 import { Route as AuthenticatedParentChildrenRouteImport } from './routes/_authenticated/parent.children'
 import { Route as AuthenticatedParentAnnouncementsRouteImport } from './routes/_authenticated/parent.announcements'
 import { Route as AuthenticatedAdminTeachersRouteImport } from './routes/_authenticated/admin.teachers'
@@ -82,6 +85,11 @@ const AuthenticatedMyBusRoute = AuthenticatedMyBusRouteImport.update({
   path: '/my-bus',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeesRoute = AuthenticatedFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -97,6 +105,12 @@ const Char91DotmcpChar93ListToolsRoute =
   Char91DotmcpChar93ListToolsRouteImport.update({
     id: '/.mcp/list-tools',
     path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicFlutterwaveWebhookRoute =
+  ApiPublicFlutterwaveWebhookRouteImport.update({
+    id: '/api/public/flutterwave-webhook',
+    path: '/api/public/flutterwave-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedTeacherStudentsRoute =
@@ -134,6 +148,12 @@ const AuthenticatedStudentIdRoute = AuthenticatedStudentIdRouteImport.update({
   path: '/student/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPaymentCallbackRoute =
+  AuthenticatedPaymentCallbackRouteImport.update({
+    id: '/payment/callback',
+    path: '/payment/callback',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedParentChildrenRoute =
   AuthenticatedParentChildrenRouteImport.update({
     id: '/parent/children',
@@ -201,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fees': typeof AuthenticatedFeesRoute
   '/my-bus': typeof AuthenticatedMyBusRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/platform': typeof AuthenticatedPlatformRoute
@@ -216,12 +237,14 @@ export interface FileRoutesByFullPath {
   '/admin/teachers': typeof AuthenticatedAdminTeachersRoute
   '/parent/announcements': typeof AuthenticatedParentAnnouncementsRoute
   '/parent/children': typeof AuthenticatedParentChildrenRoute
+  '/payment/callback': typeof AuthenticatedPaymentCallbackRoute
   '/student/$id': typeof AuthenticatedStudentIdRoute
   '/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/student/results': typeof AuthenticatedStudentResultsRoute
   '/teacher/attendance': typeof AuthenticatedTeacherAttendanceRoute
   '/teacher/results': typeof AuthenticatedTeacherResultsRoute
   '/teacher/students': typeof AuthenticatedTeacherStudentsRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -230,6 +253,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fees': typeof AuthenticatedFeesRoute
   '/my-bus': typeof AuthenticatedMyBusRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/platform': typeof AuthenticatedPlatformRoute
@@ -245,12 +269,14 @@ export interface FileRoutesByTo {
   '/admin/teachers': typeof AuthenticatedAdminTeachersRoute
   '/parent/announcements': typeof AuthenticatedParentAnnouncementsRoute
   '/parent/children': typeof AuthenticatedParentChildrenRoute
+  '/payment/callback': typeof AuthenticatedPaymentCallbackRoute
   '/student/$id': typeof AuthenticatedStudentIdRoute
   '/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/student/results': typeof AuthenticatedStudentResultsRoute
   '/teacher/attendance': typeof AuthenticatedTeacherAttendanceRoute
   '/teacher/results': typeof AuthenticatedTeacherResultsRoute
   '/teacher/students': typeof AuthenticatedTeacherStudentsRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -261,6 +287,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fees': typeof AuthenticatedFeesRoute
   '/_authenticated/my-bus': typeof AuthenticatedMyBusRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/platform': typeof AuthenticatedPlatformRoute
@@ -276,12 +303,14 @@ export interface FileRoutesById {
   '/_authenticated/admin/teachers': typeof AuthenticatedAdminTeachersRoute
   '/_authenticated/parent/announcements': typeof AuthenticatedParentAnnouncementsRoute
   '/_authenticated/parent/children': typeof AuthenticatedParentChildrenRoute
+  '/_authenticated/payment/callback': typeof AuthenticatedPaymentCallbackRoute
   '/_authenticated/student/$id': typeof AuthenticatedStudentIdRoute
   '/_authenticated/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/_authenticated/student/results': typeof AuthenticatedStudentResultsRoute
   '/_authenticated/teacher/attendance': typeof AuthenticatedTeacherAttendanceRoute
   '/_authenticated/teacher/results': typeof AuthenticatedTeacherResultsRoute
   '/_authenticated/teacher/students': typeof AuthenticatedTeacherStudentsRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -292,6 +321,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
+    | '/fees'
     | '/my-bus'
     | '/onboarding'
     | '/platform'
@@ -307,12 +337,14 @@ export interface FileRouteTypes {
     | '/admin/teachers'
     | '/parent/announcements'
     | '/parent/children'
+    | '/payment/callback'
     | '/student/$id'
     | '/student/attendance'
     | '/student/results'
     | '/teacher/attendance'
     | '/teacher/results'
     | '/teacher/students'
+    | '/api/public/flutterwave-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -321,6 +353,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
+    | '/fees'
     | '/my-bus'
     | '/onboarding'
     | '/platform'
@@ -336,12 +369,14 @@ export interface FileRouteTypes {
     | '/admin/teachers'
     | '/parent/announcements'
     | '/parent/children'
+    | '/payment/callback'
     | '/student/$id'
     | '/student/attendance'
     | '/student/results'
     | '/teacher/attendance'
     | '/teacher/results'
     | '/teacher/students'
+    | '/api/public/flutterwave-webhook'
   id:
     | '__root__'
     | '/'
@@ -351,6 +386,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/dashboard'
+    | '/_authenticated/fees'
     | '/_authenticated/my-bus'
     | '/_authenticated/onboarding'
     | '/_authenticated/platform'
@@ -366,12 +402,14 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/teachers'
     | '/_authenticated/parent/announcements'
     | '/_authenticated/parent/children'
+    | '/_authenticated/payment/callback'
     | '/_authenticated/student/$id'
     | '/_authenticated/student/attendance'
     | '/_authenticated/student/results'
     | '/_authenticated/teacher/attendance'
     | '/_authenticated/teacher/results'
     | '/_authenticated/teacher/students'
+    | '/api/public/flutterwave-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -383,6 +421,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -450,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyBusRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fees': {
+      id: '/_authenticated/fees'
+      path: '/fees'
+      fullPath: '/fees'
+      preLoaderRoute: typeof AuthenticatedFeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -469,6 +515,13 @@ declare module '@tanstack/react-router' {
       path: '/.mcp/list-tools'
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/flutterwave-webhook': {
+      id: '/api/public/flutterwave-webhook'
+      path: '/api/public/flutterwave-webhook'
+      fullPath: '/api/public/flutterwave-webhook'
+      preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/teacher/students': {
@@ -511,6 +564,13 @@ declare module '@tanstack/react-router' {
       path: '/student/$id'
       fullPath: '/student/$id'
       preLoaderRoute: typeof AuthenticatedStudentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payment/callback': {
+      id: '/_authenticated/payment/callback'
+      path: '/payment/callback'
+      fullPath: '/payment/callback'
+      preLoaderRoute: typeof AuthenticatedPaymentCallbackRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/parent/children': {
@@ -588,6 +648,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeesRoute: typeof AuthenticatedFeesRoute
   AuthenticatedMyBusRoute: typeof AuthenticatedMyBusRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
@@ -601,6 +662,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminTeachersRoute: typeof AuthenticatedAdminTeachersRoute
   AuthenticatedParentAnnouncementsRoute: typeof AuthenticatedParentAnnouncementsRoute
   AuthenticatedParentChildrenRoute: typeof AuthenticatedParentChildrenRoute
+  AuthenticatedPaymentCallbackRoute: typeof AuthenticatedPaymentCallbackRoute
   AuthenticatedStudentIdRoute: typeof AuthenticatedStudentIdRoute
   AuthenticatedStudentAttendanceRoute: typeof AuthenticatedStudentAttendanceRoute
   AuthenticatedStudentResultsRoute: typeof AuthenticatedStudentResultsRoute
@@ -611,6 +673,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeesRoute: AuthenticatedFeesRoute,
   AuthenticatedMyBusRoute: AuthenticatedMyBusRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
@@ -624,6 +687,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminTeachersRoute: AuthenticatedAdminTeachersRoute,
   AuthenticatedParentAnnouncementsRoute: AuthenticatedParentAnnouncementsRoute,
   AuthenticatedParentChildrenRoute: AuthenticatedParentChildrenRoute,
+  AuthenticatedPaymentCallbackRoute: AuthenticatedPaymentCallbackRoute,
   AuthenticatedStudentIdRoute: AuthenticatedStudentIdRoute,
   AuthenticatedStudentAttendanceRoute: AuthenticatedStudentAttendanceRoute,
   AuthenticatedStudentResultsRoute: AuthenticatedStudentResultsRoute,
@@ -645,6 +709,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

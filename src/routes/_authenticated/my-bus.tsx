@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/hooks/use-auth";
-import { Bus } from "lucide-react";
+import { usePay } from "@/lib/hooks/use-pay";
+import { Button } from "@/components/ui/button";
+import { Bus, CreditCard, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-bus")({ component: MyBusPage });
 
 function MyBusPage() {
   const { user } = useSession();
+  const { pay, isPending } = usePay();
   const { data, isLoading } = useQuery({
     queryKey: ["my-bus", user?.id],
     queryFn: async () => {
@@ -78,7 +81,7 @@ function MyBusPage() {
           <h2 className="font-semibold mb-2">Bus fee history</h2>
           <div className="card-soft overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-left"><tr><th className="px-4 py-3 font-medium">Period</th><th className="px-4 py-3 font-medium">Route</th><th className="px-4 py-3 font-medium">Amount</th><th className="px-4 py-3 font-medium">Status</th></tr></thead>
+              <thead className="bg-muted/40 text-left"><tr><th className="px-4 py-3 font-medium">Period</th><th className="px-4 py-3 font-medium">Route</th><th className="px-4 py-3 font-medium">Amount</th><th className="px-4 py-3 font-medium">Status</th><th className="px-4 py-3 font-medium text-right">Pay</th></tr></thead>
               <tbody>
                 {data!.fees.map((f: any) => (
                   <tr key={f.id} className="border-t border-border">
@@ -87,6 +90,13 @@ function MyBusPage() {
                     <td className="px-4 py-3">₦{Number(f.amount).toLocaleString()}</td>
                     <td className="px-4 py-3 capitalize">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${f.status === "paid" ? "bg-success/15 text-success" : f.status === "overdue" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{f.status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {f.status !== "paid" && (
+                        <Button size="sm" disabled={isPending(f.id)} onClick={() => pay({ purpose: "transport", bus_fee_payment_id: f.id })}>
+                          {isPending(f.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CreditCard className="h-4 w-4 mr-1" /> Pay</>}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -3,13 +3,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/hooks/use-auth";
 import { useMembership } from "@/lib/hooks/use-membership";
+import { usePay } from "@/lib/hooks/use-pay";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingBag, Plus, Trash2, Package, ShoppingCart } from "lucide-react";
+import { ShoppingBag, Plus, Trash2, Package, ShoppingCart, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/shop")({ component: Shop });
@@ -49,8 +50,10 @@ function Shop() {
 
 function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
   const qc = useQueryClient();
+  const { pay } = usePay();
   const [cat, setCat] = useState<string>("all");
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [placing, setPlacing] = useState(false);
 
   const { data: products } = useQuery({
     queryKey: ["shop-products", schoolId],
@@ -64,21 +67,27 @@ function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
     return s + (p ? Number(p.price) * q : 0);
   }, 0);
 
-  async function checkout() {
+  async function checkout(payNow: boolean) {
     if (cartItems.length === 0) return toast.error("Cart is empty");
+    setPlacing(true);
     const { data: order, error } = await supabase.from("shop_orders").insert({
       school_id: schoolId, buyer_id: userId, total, status: "pending",
     }).select().single();
-    if (error || !order) return toast.error(error?.message || "Order failed");
+    if (error || !order) { setPlacing(false); return toast.error(error?.message || "Order failed"); }
     const items = cartItems.map(([product_id, quantity]) => {
       const p = products!.find((x: any) => x.id === product_id)!;
       return { order_id: order.id, product_id, quantity, unit_price: p.price };
     });
     const { error: e2 } = await supabase.from("shop_order_items").insert(items);
-    if (e2) return toast.error(e2.message);
-    toast.success("Order placed!");
+    if (e2) { setPlacing(false); return toast.error(e2.message); }
     setCart({});
     qc.invalidateQueries({ queryKey: ["shop-orders"] });
+    if (payNow) {
+      await pay({ purpose: "shop", order_id: order.id });
+      return;
+    }
+    setPlacing(false);
+    toast.success("Order placed! You can pay from My Orders.");
   }
 
   return (
@@ -111,12 +120,19 @@ function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
       </div>
 
       {cartItems.length > 0 && (
-        <div className="card-soft p-4 sticky bottom-4 flex items-center justify-between">
+        <div className="card-soft p-4 sticky bottom-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <div className="text-sm text-muted-foreground">{cartItems.length} item(s) · Total</div>
             <div className="text-2xl font-extrabold">₦{total.toLocaleString()}</div>
           </div>
-          <Button onClick={checkout}><ShoppingCart className="h-4 w-4 mr-1" /> Place order</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" disabled={placing} onClick={() => checkout(false)}>
+              <ShoppingCart className="h-4 w-4 mr-1" /> Place order
+            </Button>
+            <Button disabled={placing} onClick={() => checkout(true)}>
+              {placing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CreditCard className="h-4 w-4 mr-1" />} Pay now
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -133,6 +149,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function MyOrdersTab({ userId }: { userId: string }) {
+  const { pay, isPending } = usePay();
   const { data: orders } = useQuery({
     queryKey: ["shop-orders", "mine", userId],
     queryFn: async () => (await supabase.from("shop_orders")
@@ -144,12 +161,17 @@ function MyOrdersTab({ userId }: { userId: string }) {
     <div className="space-y-3">
       {orders.map((o: any) => (
         <div key={o.id} className="card-soft p-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-2 flex-wrap">
             <div>
               <div className="font-semibold">Order #{o.id.slice(0, 8)}</div>
               <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${o.status === "pending" ? "bg-warning text-warning-foreground" : o.status === "completed" ? "bg-success text-success-foreground" : "bg-muted"}`}>{o.status}</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-1 rounded-full ${o.payment_status === "paid" ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"}`}>
+                {o.payment_status === "paid" ? "paid" : "unpaid"}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded-full ${o.status === "pending" ? "bg-warning text-warning-foreground" : o.status === "completed" ? "bg-success text-success-foreground" : "bg-muted"}`}>{o.status}</span>
+            </div>
           </div>
           <ul className="text-sm mt-2 space-y-1">
             {o.shop_order_items?.map((it: any) => (
@@ -159,7 +181,14 @@ function MyOrdersTab({ userId }: { userId: string }) {
               </li>
             ))}
           </ul>
-          <div className="text-right font-bold mt-2">Total: ₦{Number(o.total).toLocaleString()}</div>
+          <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+            <div className="font-bold">Total: ₦{Number(o.total).toLocaleString()}</div>
+            {o.payment_status !== "paid" && o.status !== "cancelled" && (
+              <Button size="sm" disabled={isPending(o.id)} onClick={() => pay({ purpose: "shop", order_id: o.id })}>
+                {isPending(o.id) ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CreditCard className="h-4 w-4 mr-1" />} Pay now
+              </Button>
+            )}
+          </div>
         </div>
       ))}
     </div>
