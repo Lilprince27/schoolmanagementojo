@@ -120,12 +120,19 @@ function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
       </div>
 
       {cartItems.length > 0 && (
-        <div className="card-soft p-4 sticky bottom-4 flex items-center justify-between">
+        <div className="card-soft p-4 sticky bottom-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <div className="text-sm text-muted-foreground">{cartItems.length} item(s) · Total</div>
             <div className="text-2xl font-extrabold">₦{total.toLocaleString()}</div>
           </div>
-          <Button onClick={checkout}><ShoppingCart className="h-4 w-4 mr-1" /> Place order</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" disabled={placing} onClick={() => checkout(false)}>
+              <ShoppingCart className="h-4 w-4 mr-1" /> Place order
+            </Button>
+            <Button disabled={placing} onClick={() => checkout(true)}>
+              {placing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CreditCard className="h-4 w-4 mr-1" />} Pay now
+            </Button>
+          </div>
         </div>
       )}
     </div>
