@@ -10,8 +10,9 @@ import { GraduationCap, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — EduConnect" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : undefined,
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: string } => ({
+    ...(typeof s.next === "string" ? { next: s.next } : {}),
+    ...(typeof s.mode === "string" ? { mode: s.mode } : {}),
   }),
   component: AuthPage,
 });
