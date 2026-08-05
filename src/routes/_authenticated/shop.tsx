@@ -3,13 +3,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/hooks/use-auth";
 import { useMembership } from "@/lib/hooks/use-membership";
+import { usePay } from "@/lib/hooks/use-pay";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingBag, Plus, Trash2, Package, ShoppingCart } from "lucide-react";
+import { ShoppingBag, Plus, Trash2, Package, ShoppingCart, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/shop")({ component: Shop });
