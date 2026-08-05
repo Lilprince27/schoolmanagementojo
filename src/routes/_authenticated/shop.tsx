@@ -67,21 +67,27 @@ function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
     return s + (p ? Number(p.price) * q : 0);
   }, 0);
 
-  async function checkout() {
+  async function checkout(payNow: boolean) {
     if (cartItems.length === 0) return toast.error("Cart is empty");
+    setPlacing(true);
     const { data: order, error } = await supabase.from("shop_orders").insert({
       school_id: schoolId, buyer_id: userId, total, status: "pending",
     }).select().single();
-    if (error || !order) return toast.error(error?.message || "Order failed");
+    if (error || !order) { setPlacing(false); return toast.error(error?.message || "Order failed"); }
     const items = cartItems.map(([product_id, quantity]) => {
       const p = products!.find((x: any) => x.id === product_id)!;
       return { order_id: order.id, product_id, quantity, unit_price: p.price };
     });
     const { error: e2 } = await supabase.from("shop_order_items").insert(items);
-    if (e2) return toast.error(e2.message);
-    toast.success("Order placed!");
+    if (e2) { setPlacing(false); return toast.error(e2.message); }
     setCart({});
     qc.invalidateQueries({ queryKey: ["shop-orders"] });
+    if (payNow) {
+      await pay({ purpose: "shop", order_id: order.id });
+      return;
+    }
+    setPlacing(false);
+    toast.success("Order placed! You can pay from My Orders.");
   }
 
   return (
