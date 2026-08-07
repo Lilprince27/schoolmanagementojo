@@ -23,6 +23,11 @@ async function flw<T = any>(path: string, init?: RequestInit): Promise<T> {
     body = { message: text };
   }
   if (!res.ok || body?.status === "error") {
+    if (res.status === 401) {
+      throw new Error(
+        "Payments are not configured correctly: Flutterwave rejected the secret key. Ask your administrator to save a valid live/test secret key (FLWSECK-…).",
+      );
+    }
     throw new Error(`Flutterwave [${res.status}]: ${body?.message ?? text}`);
   }
   return body as T;
