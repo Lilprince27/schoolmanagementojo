@@ -193,6 +193,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
     return [
       ...base,
       { to: "/parent/children", label: "My Children", icon: Baby },
+      { to: "/parent/attendance", label: "Attendance", icon: ClipboardCheck },
       { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/fees", label: "Fees & Payments", icon: Wallet },
