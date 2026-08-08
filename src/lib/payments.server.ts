@@ -6,6 +6,14 @@ function secretKey(): string {
   return key;
 }
 
+/** True when the configured key is a Flutterwave sandbox/test key. */
+export function isTestMode(): boolean {
+  return /test/i.test(process.env["FLUTTERWAVE_SECRET_KEY"] ?? "");
+}
+
+const TEST_MODE_NOTE =
+  "Payments are running in Flutterwave TEST mode, so real bank accounts and real checkouts don't work (test links expire immediately and only the dummy bank 044 / account 0690000031 is accepted). Ask your administrator to save the LIVE Flutterwave secret key (FLWSECK-…) from Flutterwave → Settings → API Keys, with the dashboard switched to Live.";
+
 async function flw<T = any>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${FLW_BASE}${path}`, {
     ...init,
@@ -25,13 +33,15 @@ async function flw<T = any>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok || body?.status === "error") {
     if (res.status === 401) {
       throw new Error(
-        "Payments are not configured correctly: Flutterwave rejected the secret key. Ask your administrator to save a valid live/test secret key (FLWSECK-…).",
+        "Payments are not configured correctly: Flutterwave rejected the secret key. Ask your administrator to save a valid live secret key (FLWSECK-…).",
       );
     }
+    if (isTestMode()) throw new Error(TEST_MODE_NOTE);
     throw new Error(`Flutterwave [${res.status}]: ${body?.message ?? text}`);
   }
   return body as T;
 }
+
 
 export type CreateLinkArgs = {
   txRef: string;
@@ -48,6 +58,7 @@ export type CreateLinkArgs = {
 };
 
 export async function createPaymentLink(args: CreateLinkArgs): Promise<string> {
+  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
   const payload: Record<string, unknown> = {
     tx_ref: args.txRef,
     amount: Number(args.amount.toFixed(2)),
@@ -113,6 +124,7 @@ export type SubaccountArgs = {
 };
 
 export async function createSubaccount(args: SubaccountArgs): Promise<{ id: string; accountName: string | null }> {
+  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
   const body = await flw<{ data?: any }>("/subaccounts", {
     method: "POST",
     body: JSON.stringify({
