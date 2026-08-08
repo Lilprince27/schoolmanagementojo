@@ -58,6 +58,7 @@ export type CreateLinkArgs = {
 };
 
 export async function createPaymentLink(args: CreateLinkArgs): Promise<string> {
+  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
   const payload: Record<string, unknown> = {
     tx_ref: args.txRef,
     amount: Number(args.amount.toFixed(2)),
