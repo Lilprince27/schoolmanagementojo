@@ -124,6 +124,7 @@ export type SubaccountArgs = {
 };
 
 export async function createSubaccount(args: SubaccountArgs): Promise<{ id: string; accountName: string | null }> {
+  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
   const body = await flw<{ data?: any }>("/subaccounts", {
     method: "POST",
     body: JSON.stringify({
