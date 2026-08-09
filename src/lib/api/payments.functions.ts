@@ -204,3 +204,79 @@ export const confirmPayment = createServerFn({ method: "POST" })
     const result = await settlePaymentByReference(data.reference);
     return { ok: result.ok, status: result.status, message: "message" in result ? result.message : null };
   });
+
+const mask = (v: string | null | undefined) =>
+  v ? `${v.slice(0, 9)}${"•".repeat(Math.max(4, v.length - 13))}${v.slice(-4)}` : null;
+
+async function assertPlatformAdmin(context: any) {
+  const { data: ok } = await context.supabase.rpc("is_platform_admin", { _user_id: context.userId });
+  if (!ok) throw new Error("Only the platform administrator can manage payment settings");
+}
+
+/** Current payment mode + masked keys (platform admin only). */
+export const getPaymentSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertPlatformAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await (supabaseAdmin as any)
+      .from("payment_settings")
+      .select("mode, live_secret_key, test_secret_key, secret_hash, updated_at")
+      .eq("id", true)
+      .maybeSingle();
+    const { getPaymentConfig } = await import("@/lib/payments.server");
+    const cfg = await getPaymentConfig();
+    return {
+      mode: (data?.mode ?? cfg.mode) as "live" | "test",
+      liveKeyMasked: mask(data?.live_secret_key),
+      testKeyMasked: mask(data?.test_secret_key),
+      hasSecretHash: !!(data?.secret_hash),
+      activeSource: cfg.source,
+      activeMode: cfg.mode,
+      configured: !!cfg.key,
+      updated_at: data?.updated_at ?? null,
+    };
+  });
+
+/** Saves the Flutterwave keys / webhook hash and the live-vs-test switch. */
+export const savePaymentSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        mode: z.enum(["live", "test"]),
+        live_secret_key: z.string().trim().max(200).optional(),
+        test_secret_key: z.string().trim().max(200).optional(),
+        secret_hash: z.string().trim().max(200).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertPlatformAdmin(context);
+    const patch: Record<string, unknown> = { mode: data.mode, updated_by: context.userId, updated_at: new Date().toISOString() };
+    if (data.live_secret_key) patch["live_secret_key"] = data.live_secret_key;
+    if (data.test_secret_key) patch["test_secret_key"] = data.test_secret_key;
+    if (data.secret_hash) patch["secret_hash"] = data.secret_hash;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any)
+      .from("payment_settings")
+      .upsert({ id: true, ...patch }, { onConflict: "id" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Calls Flutterwave with the saved key to confirm it works. */
+export const testPaymentKey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertPlatformAdmin(context);
+    const { listBanks, getPaymentConfig } = await import("@/lib/payments.server");
+    const cfg = await getPaymentConfig();
+    try {
+      const banks = await listBanks();
+      return { ok: true as const, mode: cfg.mode, message: `Key works — ${banks.length} banks returned in ${cfg.mode} mode.` };
+    } catch (e) {
+      return { ok: false as const, mode: cfg.mode, message: e instanceof Error ? e.message : "Key check failed" };
+    }
+  });
