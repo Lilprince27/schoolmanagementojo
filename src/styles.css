@@ -166,3 +166,15 @@
   .no-print { display: none !important; }
   body { background: white; }
 }
+
+/* Full-screen (installed) app: respect device safe areas so the UI is edge-to-edge
+   without sliding under the status bar or home indicator. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    overscroll-behavior-y: none;
+  }
+}
