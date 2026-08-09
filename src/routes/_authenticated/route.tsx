@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2, ClipboardCheck,
-  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu, ShoppingBag, Wallet
+  FileBarChart, Megaphone, LogOut, School, Baby, Bus, ShieldCheck, Inbox, Menu, ShoppingBag, Wallet, Receipt, Settings2
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -153,6 +153,8 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
 
   if (membership?.isPlatformAdmin) {
     base.push({ to: "/platform", label: "Schools", icon: ShieldCheck });
+    base.push({ to: "/payments/history", label: "Payments history", icon: Receipt });
+    base.push({ to: "/payments/settings", label: "Payments settings", icon: Settings2 });
     return base;
   }
 
@@ -173,6 +175,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/transport", label: "School Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/fees", label: "Fees & Payments", icon: Wallet },
+      { to: "/payments/history", label: "Payments history", icon: Receipt },
       { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -187,6 +190,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/teacher/students", label: "My Students", icon: GraduationCap },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/fees", label: "Fees & Payments", icon: Wallet },
+      { to: "/payments/history", label: "Payments history", icon: Receipt },
     ];
   }
   if (role === "parent") {
@@ -197,6 +201,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/fees", label: "Fees & Payments", icon: Wallet },
+      { to: "/payments/history", label: "Payments history", icon: Receipt },
       { to: "/parent/announcements", label: "Announcements", icon: Megaphone },
     ];
   }
@@ -208,6 +213,7 @@ function buildNav(role: ReturnType<typeof primaryRole>, membership: ReturnType<t
       { to: "/my-bus", label: "My Bus", icon: Bus },
       { to: "/shop", label: "Shop", icon: ShoppingBag },
       { to: "/fees", label: "Fees & Payments", icon: Wallet },
+      { to: "/payments/history", label: "Payments history", icon: Receipt },
     ];
   }
   return base;

@@ -975,6 +975,36 @@ export type Database = {
           },
         ]
       }
+      payment_settings: {
+        Row: {
+          id: boolean
+          live_secret_key: string | null
+          mode: string
+          secret_hash: string | null
+          test_secret_key: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: boolean
+          live_secret_key?: string | null
+          mode?: string
+          secret_hash?: string | null
+          test_secret_key?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: boolean
+          live_secret_key?: string | null
+          mode?: string
+          secret_hash?: string | null
+          test_secret_key?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number

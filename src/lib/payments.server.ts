@@ -1,24 +1,71 @@
 const FLW_BASE = "https://api.flutterwave.com/v3";
 
-function secretKey(): string {
-  const key = process.env["FLUTTERWAVE_SECRET_KEY"];
-  if (!key) throw new Error("Payments are not configured yet. Add your Flutterwave secret key.");
-  return key;
+export type PaymentConfig = {
+  mode: "live" | "test";
+  key: string | null;
+  secretHash: string | null;
+  source: "settings" | "env" | "none";
+};
+
+/**
+ * Resolves the active Flutterwave configuration. Keys saved in the private
+ * payment_settings table win; the FLUTTERWAVE_* environment variables are the
+ * fallback so existing deployments keep working.
+ */
+export async function getPaymentConfig(): Promise<PaymentConfig> {
+  const envKey = process.env["FLUTTERWAVE_SECRET_KEY"] ?? null;
+  const envHash = process.env["FLUTTERWAVE_SECRET_HASH"] ?? null;
+
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await (supabaseAdmin as any)
+      .from("payment_settings")
+      .select("mode, live_secret_key, test_secret_key, secret_hash")
+      .eq("id", true)
+      .maybeSingle();
+
+    if (data) {
+      const mode: "live" | "test" = data.mode === "live" ? "live" : "test";
+      const key = (mode === "live" ? data.live_secret_key : data.test_secret_key) || null;
+      if (key) {
+        return { mode, key, secretHash: data.secret_hash || envHash, source: "settings" };
+      }
+      return {
+        mode: envKey ? (/test/i.test(envKey) ? "test" : "live") : mode,
+        key: envKey,
+        secretHash: data.secret_hash || envHash,
+        source: envKey ? "env" : "none",
+      };
+    }
+  } catch {
+    /* fall back to env */
+  }
+
+  return {
+    mode: envKey && /test/i.test(envKey) ? "test" : "live",
+    key: envKey,
+    secretHash: envHash,
+    source: envKey ? "env" : "none",
+  };
 }
 
-/** True when the configured key is a Flutterwave sandbox/test key. */
-export function isTestMode(): boolean {
-  return /test/i.test(process.env["FLUTTERWAVE_SECRET_KEY"] ?? "");
+/** The webhook secret hash currently configured (settings first, env fallback). */
+export async function getWebhookSecretHash(): Promise<string | null> {
+  return (await getPaymentConfig()).secretHash;
 }
 
 const TEST_MODE_NOTE =
-  "Payments are running in Flutterwave TEST mode, so real bank accounts and real checkouts don't work (test links expire immediately and only the dummy bank 044 / account 0690000031 is accepted). Ask your administrator to save the LIVE Flutterwave secret key (FLWSECK-…) from Flutterwave → Settings → API Keys, with the dashboard switched to Live.";
+  "Payments are running in Flutterwave TEST mode, so real bank accounts and real checkouts don't work (test links expire immediately and only the dummy bank 044 / account 0690000031 is accepted). Switch to Live mode in Payments settings and save your live Flutterwave secret key (FLWSECK-…).";
 
 async function flw<T = any>(path: string, init?: RequestInit): Promise<T> {
+  const cfg = await getPaymentConfig();
+  if (!cfg.key) {
+    throw new Error("Payments are not configured yet. Add your Flutterwave secret key in Payments settings.");
+  }
   const res = await fetch(`${FLW_BASE}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${secretKey()}`,
+      Authorization: `Bearer ${cfg.key}`,
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
     },
@@ -33,14 +80,15 @@ async function flw<T = any>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok || body?.status === "error") {
     if (res.status === 401) {
       throw new Error(
-        "Payments are not configured correctly: Flutterwave rejected the secret key. Ask your administrator to save a valid live secret key (FLWSECK-…).",
+        "Payments are not configured correctly: Flutterwave rejected the secret key. Save a valid secret key in Payments settings.",
       );
     }
-    if (isTestMode()) throw new Error(TEST_MODE_NOTE);
+    if (cfg.mode === "test") throw new Error(TEST_MODE_NOTE);
     throw new Error(`Flutterwave [${res.status}]: ${body?.message ?? text}`);
   }
   return body as T;
 }
+
 
 
 export type CreateLinkArgs = {
@@ -58,7 +106,7 @@ export type CreateLinkArgs = {
 };
 
 export async function createPaymentLink(args: CreateLinkArgs): Promise<string> {
-  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
+  if ((await getPaymentConfig()).mode === "test") throw new Error(TEST_MODE_NOTE);
   const payload: Record<string, unknown> = {
     tx_ref: args.txRef,
     amount: Number(args.amount.toFixed(2)),
@@ -124,7 +172,7 @@ export type SubaccountArgs = {
 };
 
 export async function createSubaccount(args: SubaccountArgs): Promise<{ id: string; accountName: string | null }> {
-  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
+  if ((await getPaymentConfig()).mode === "test") throw new Error(TEST_MODE_NOTE);
   const body = await flw<{ data?: any }>("/subaccounts", {
     method: "POST",
     body: JSON.stringify({

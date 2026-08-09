@@ -29,6 +29,8 @@ import { Route as AuthenticatedTeacherAttendanceRouteImport } from './routes/_au
 import { Route as AuthenticatedStudentResultsRouteImport } from './routes/_authenticated/student.results'
 import { Route as AuthenticatedStudentAttendanceRouteImport } from './routes/_authenticated/student.attendance'
 import { Route as AuthenticatedStudentIdRouteImport } from './routes/_authenticated/student.$id'
+import { Route as AuthenticatedPaymentsSettingsRouteImport } from './routes/_authenticated/payments.settings'
+import { Route as AuthenticatedPaymentsHistoryRouteImport } from './routes/_authenticated/payments.history'
 import { Route as AuthenticatedPaymentCallbackRouteImport } from './routes/_authenticated/payment.callback'
 import { Route as AuthenticatedParentChildrenRouteImport } from './routes/_authenticated/parent.children'
 import { Route as AuthenticatedParentAttendanceRouteImport } from './routes/_authenticated/parent.attendance'
@@ -149,6 +151,18 @@ const AuthenticatedStudentIdRoute = AuthenticatedStudentIdRouteImport.update({
   path: '/student/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPaymentsSettingsRoute =
+  AuthenticatedPaymentsSettingsRouteImport.update({
+    id: '/payments/settings',
+    path: '/payments/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPaymentsHistoryRoute =
+  AuthenticatedPaymentsHistoryRouteImport.update({
+    id: '/payments/history',
+    path: '/payments/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaymentCallbackRoute =
   AuthenticatedPaymentCallbackRouteImport.update({
     id: '/payment/callback',
@@ -246,6 +260,8 @@ export interface FileRoutesByFullPath {
   '/parent/attendance': typeof AuthenticatedParentAttendanceRoute
   '/parent/children': typeof AuthenticatedParentChildrenRoute
   '/payment/callback': typeof AuthenticatedPaymentCallbackRoute
+  '/payments/history': typeof AuthenticatedPaymentsHistoryRoute
+  '/payments/settings': typeof AuthenticatedPaymentsSettingsRoute
   '/student/$id': typeof AuthenticatedStudentIdRoute
   '/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/student/results': typeof AuthenticatedStudentResultsRoute
@@ -279,6 +295,8 @@ export interface FileRoutesByTo {
   '/parent/attendance': typeof AuthenticatedParentAttendanceRoute
   '/parent/children': typeof AuthenticatedParentChildrenRoute
   '/payment/callback': typeof AuthenticatedPaymentCallbackRoute
+  '/payments/history': typeof AuthenticatedPaymentsHistoryRoute
+  '/payments/settings': typeof AuthenticatedPaymentsSettingsRoute
   '/student/$id': typeof AuthenticatedStudentIdRoute
   '/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/student/results': typeof AuthenticatedStudentResultsRoute
@@ -314,6 +332,8 @@ export interface FileRoutesById {
   '/_authenticated/parent/attendance': typeof AuthenticatedParentAttendanceRoute
   '/_authenticated/parent/children': typeof AuthenticatedParentChildrenRoute
   '/_authenticated/payment/callback': typeof AuthenticatedPaymentCallbackRoute
+  '/_authenticated/payments/history': typeof AuthenticatedPaymentsHistoryRoute
+  '/_authenticated/payments/settings': typeof AuthenticatedPaymentsSettingsRoute
   '/_authenticated/student/$id': typeof AuthenticatedStudentIdRoute
   '/_authenticated/student/attendance': typeof AuthenticatedStudentAttendanceRoute
   '/_authenticated/student/results': typeof AuthenticatedStudentResultsRoute
@@ -349,6 +369,8 @@ export interface FileRouteTypes {
     | '/parent/attendance'
     | '/parent/children'
     | '/payment/callback'
+    | '/payments/history'
+    | '/payments/settings'
     | '/student/$id'
     | '/student/attendance'
     | '/student/results'
@@ -382,6 +404,8 @@ export interface FileRouteTypes {
     | '/parent/attendance'
     | '/parent/children'
     | '/payment/callback'
+    | '/payments/history'
+    | '/payments/settings'
     | '/student/$id'
     | '/student/attendance'
     | '/student/results'
@@ -416,6 +440,8 @@ export interface FileRouteTypes {
     | '/_authenticated/parent/attendance'
     | '/_authenticated/parent/children'
     | '/_authenticated/payment/callback'
+    | '/_authenticated/payments/history'
+    | '/_authenticated/payments/settings'
     | '/_authenticated/student/$id'
     | '/_authenticated/student/attendance'
     | '/_authenticated/student/results'
@@ -579,6 +605,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/payments/settings': {
+      id: '/_authenticated/payments/settings'
+      path: '/payments/settings'
+      fullPath: '/payments/settings'
+      preLoaderRoute: typeof AuthenticatedPaymentsSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments/history': {
+      id: '/_authenticated/payments/history'
+      path: '/payments/history'
+      fullPath: '/payments/history'
+      preLoaderRoute: typeof AuthenticatedPaymentsHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payment/callback': {
       id: '/_authenticated/payment/callback'
       path: '/payment/callback'
@@ -684,6 +724,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedParentAttendanceRoute: typeof AuthenticatedParentAttendanceRoute
   AuthenticatedParentChildrenRoute: typeof AuthenticatedParentChildrenRoute
   AuthenticatedPaymentCallbackRoute: typeof AuthenticatedPaymentCallbackRoute
+  AuthenticatedPaymentsHistoryRoute: typeof AuthenticatedPaymentsHistoryRoute
+  AuthenticatedPaymentsSettingsRoute: typeof AuthenticatedPaymentsSettingsRoute
   AuthenticatedStudentIdRoute: typeof AuthenticatedStudentIdRoute
   AuthenticatedStudentAttendanceRoute: typeof AuthenticatedStudentAttendanceRoute
   AuthenticatedStudentResultsRoute: typeof AuthenticatedStudentResultsRoute
@@ -710,6 +752,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedParentAttendanceRoute: AuthenticatedParentAttendanceRoute,
   AuthenticatedParentChildrenRoute: AuthenticatedParentChildrenRoute,
   AuthenticatedPaymentCallbackRoute: AuthenticatedPaymentCallbackRoute,
+  AuthenticatedPaymentsHistoryRoute: AuthenticatedPaymentsHistoryRoute,
+  AuthenticatedPaymentsSettingsRoute: AuthenticatedPaymentsSettingsRoute,
   AuthenticatedStudentIdRoute: AuthenticatedStudentIdRoute,
   AuthenticatedStudentAttendanceRoute: AuthenticatedStudentAttendanceRoute,
   AuthenticatedStudentResultsRoute: AuthenticatedStudentResultsRoute,
