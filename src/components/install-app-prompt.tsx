@@ -25,7 +25,8 @@ export function InstallAppPrompt() {
 
   useEffect(() => {
     if (isStandalone()) return;
-    if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
+    const until = Number(window.localStorage.getItem(DISMISS_KEY) ?? 0);
+    if (until > Date.now()) return; // snoozed, not dismissed forever
     if (window.self !== window.top) return; // never inside the editor preview iframe
 
     const ios = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
@@ -49,7 +50,7 @@ export function InstallAppPrompt() {
   function dismiss() {
     setShow(false);
     try {
-      window.localStorage.setItem(DISMISS_KEY, "1");
+      window.localStorage.setItem(DISMISS_KEY, String(Date.now() + 3 * 24 * 60 * 60 * 1000));
     } catch {
       /* ignore */
     }
