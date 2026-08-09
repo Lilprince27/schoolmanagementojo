@@ -106,7 +106,7 @@ export type CreateLinkArgs = {
 };
 
 export async function createPaymentLink(args: CreateLinkArgs): Promise<string> {
-  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
+  if ((await getPaymentConfig()).mode === "test") throw new Error(TEST_MODE_NOTE);
   const payload: Record<string, unknown> = {
     tx_ref: args.txRef,
     amount: Number(args.amount.toFixed(2)),
@@ -172,7 +172,7 @@ export type SubaccountArgs = {
 };
 
 export async function createSubaccount(args: SubaccountArgs): Promise<{ id: string; accountName: string | null }> {
-  if (isTestMode()) throw new Error(TEST_MODE_NOTE);
+  if ((await getPaymentConfig()).mode === "test") throw new Error(TEST_MODE_NOTE);
   const body = await flw<{ data?: any }>("/subaccounts", {
     method: "POST",
     body: JSON.stringify({
