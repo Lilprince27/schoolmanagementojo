@@ -4,8 +4,10 @@ export const Route = createFileRoute("/api/public/flutterwave-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env["FLUTTERWAVE_SECRET_HASH"];
+        const { getWebhookSecretHash } = await import("@/lib/payments.server");
+        const expected = await getWebhookSecretHash();
         const signature = request.headers.get("verif-hash");
+
         if (!expected || !signature || signature !== expected) {
           return new Response("Invalid signature", { status: 401 });
         }
