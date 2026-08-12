@@ -67,12 +67,9 @@ function PlatformAdminDashboard() {
   const { data: overview } = useQuery({
     queryKey: ["platform-overview"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("schools")
-        .select("id, name, admin_email, admin_profile_id, created_at")
-        .order("created_at", { ascending: false });
+      const { data, error } = await (supabase as any).rpc("platform_schools");
       if (error) throw error;
-      const schools = data ?? [];
+      const schools = (data ?? []) as any[];
       return {
         schools,
         assignedAdmins: schools.filter((school) => !!school.admin_email).length,
