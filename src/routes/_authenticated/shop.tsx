@@ -19,25 +19,43 @@ const CATEGORIES = ["uniform", "books", "sport", "lab", "badges", "accessories",
 
 function Shop() {
   const { user } = useSession();
-  const { data: membership } = useMembership(user?.id, user?.email);
+  const { data: membership, isLoading } = useMembership(user?.id, user?.email);
   const isAdmin = !!membership?.isSchoolAdmin || !!membership?.isPlatformAdmin;
   const schoolId = membership?.schoolId ?? null;
 
-  if (!schoolId) return <p className="text-muted-foreground">Join a school to access the shop.</p>;
+  if (isLoading || !membership) {
+    return (
+      <div className="space-y-3">
+        <div className="h-8 w-40 rounded-lg bg-muted animate-pulse" />
+        <div className="h-52 rounded-2xl bg-muted animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!schoolId) {
+    return (
+      <p className="text-muted-foreground">
+        {membership.isPlatformAdmin
+          ? "Open a school from the Schools area to manage its shop."
+          : "You have not been assigned to a school yet. Please contact your school administrator."}
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-3xl font-extrabold flex items-center gap-2"><ShoppingBag /> School Shop</h1>
-        <p className="text-muted-foreground">Uniforms, books, sport gear, lab items and more.</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2"><ShoppingBag /> School Shop</h1>
+        <p className="text-sm text-muted-foreground">Uniforms, books, sport gear, lab items and more.</p>
       </div>
       <Tabs defaultValue="browse">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="browse"><Package className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
           <TabsTrigger value="orders"><ShoppingCart className="h-4 w-4 mr-1" /> My Orders</TabsTrigger>
           {isAdmin && <TabsTrigger value="manage">Manage products</TabsTrigger>}
           {isAdmin && <TabsTrigger value="all-orders">All orders</TabsTrigger>}
         </TabsList>
+
 
         <TabsContent value="browse"><BrowseTab schoolId={schoolId} userId={user!.id} /></TabsContent>
         <TabsContent value="orders"><MyOrdersTab userId={user!.id} /></TabsContent>
