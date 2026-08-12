@@ -39,12 +39,19 @@ export const connectSchoolPayout = createServerFn({ method: "POST" })
     });
     if (!allowed) throw new Error("Only the school administrator can set up payouts");
 
-    const { data: school } = await context.supabase
+    // Financial columns are not granted to `authenticated`, so read them with the
+    // service client AFTER the school-admin authorization check above.
+    const { supabaseAdmin: adminRead } = await import("@/integrations/supabase/client.server");
+    const { data: school } = await adminRead
       .from("schools")
       .select("name, platform_fee_percent")
       .eq("id", data.school_id)
       .maybeSingle();
-    if (!school) throw new Error("School not found");
+    if (!school) {
+      throw new Error(
+        "Unable to load your school information. Please refresh or contact your school administrator.",
+      );
+    }
 
     const { createSubaccount } = await import("@/lib/payments.server");
     const sub = await createSubaccount({
