@@ -141,7 +141,10 @@ export const startPayment = createServerFn({ method: "POST" })
     if (!schoolId) throw new Error("Could not determine the school for this payment");
     if (!(amount > 0)) throw new Error("Nothing to pay");
 
-    const { data: school } = await supabase
+    // Payout routing columns are server-only; the payer is already authorized for
+    // this specific order/invoice above, so read the school with the service client.
+    const { supabaseAdmin: schoolRead } = await import("@/integrations/supabase/client.server");
+    const { data: school } = await schoolRead
       .from("schools")
       .select("name, logo_url, flw_subaccount_id")
       .eq("id", schoolId)
