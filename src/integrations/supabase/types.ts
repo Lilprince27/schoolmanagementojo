@@ -1967,6 +1967,10 @@ export type Database = {
         Args: { _email: string; _school_id: string }
         Returns: undefined
       }
+      can_access_school: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1989,9 +1993,40 @@ export type Database = {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      platform_schools: {
+        Args: never
+        Returns: {
+          address: string
+          admin_email: string
+          admin_profile_id: string
+          banner_url: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          lga: string
+          logo_url: string
+          motto: string
+          name: string
+          phone: string
+          primary_color: string
+          secondary_color: string
+          state: string
+        }[]
+      }
       reject_join_request: { Args: { _request_id: string }; Returns: undefined }
       reject_parent: { Args: { _parent_id: string }; Returns: undefined }
       reject_teacher: { Args: { _teacher_id: string }; Returns: undefined }
+      school_payout_info: {
+        Args: { _school_id: string }
+        Returns: {
+          flw_subaccount_id: string
+          name: string
+          payout_account_name: string
+          payout_account_number: string
+          payout_bank_code: string
+        }[]
+      }
       teacher_can_see_student: {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean

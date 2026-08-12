@@ -43,11 +43,9 @@ function Platform() {
     queryKey: ["platform-schools"],
     enabled: isPlatformAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.from("schools")
-        .select("id, name, address, state, lga, country, email, admin_email, admin_profile_id, logo_url, banner_url, primary_color, secondary_color, motto, created_at")
-        .order("created_at", { ascending: false });
+      const { data, error } = await (supabase as any).rpc("platform_schools");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
   });
 

@@ -289,7 +289,10 @@ function PayoutTab({ schoolId }: { schoolId: string }) {
 
   const { data: school } = useQuery({
     queryKey: ["school-payout", schoolId],
-    queryFn: async () => (await supabase.from("schools").select("name, flw_subaccount_id, payout_account_number, payout_account_name, payout_bank_code").eq("id", schoolId).maybeSingle()).data,
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc("school_payout_info", { _school_id: schoolId });
+      return (Array.isArray(data) ? data[0] : data) ?? null;
+    },
   });
 
   const { data: bankList, isLoading: banksLoading, error: banksError } = useQuery({
