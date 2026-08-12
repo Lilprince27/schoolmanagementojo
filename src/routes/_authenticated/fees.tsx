@@ -21,18 +21,45 @@ const naira = (n: number | string) => `₦${Number(n).toLocaleString()}`;
 
 function FeesPage() {
   const { user } = useSession();
-  const { data: membership } = useMembership(user?.id, user?.email);
+  const { data: membership, isLoading, isError } = useMembership(user?.id, user?.email);
   const isAdmin = !!membership?.isSchoolAdmin || !!membership?.isPlatformAdmin;
   const schoolId = membership?.schoolId ?? null;
 
-  if (!schoolId) return <p className="text-muted-foreground">Join a school to view fees and payments.</p>;
+  if (isLoading || !membership) {
+    return (
+      <div className="space-y-3">
+        <div className="h-8 w-48 rounded-lg bg-muted animate-pulse" />
+        <div className="h-24 rounded-2xl bg-muted animate-pulse" />
+        <div className="h-24 rounded-2xl bg-muted animate-pulse" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <p className="text-muted-foreground">
+        Unable to load your school information. Please refresh or contact your school administrator.
+      </p>
+    );
+  }
+
+  if (!schoolId) {
+    return (
+      <p className="text-muted-foreground">
+        {membership.isPlatformAdmin
+          ? "Open a school from the Schools area to manage its fees and payouts."
+          : "You have not been assigned to a school yet. Please contact your school administrator."}
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-3xl font-extrabold flex items-center gap-2"><Wallet /> Fees & Payments</h1>
-        <p className="text-muted-foreground">Pay school fees, bus fees and shop orders by card, bank transfer or USSD.</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2"><Wallet /> Fees & Payments</h1>
+        <p className="text-sm text-muted-foreground">Pay school fees, bus fees and shop orders by card, bank transfer or USSD.</p>
       </div>
+
 
       <Tabs defaultValue="invoices">
         <TabsList className="flex-wrap h-auto">

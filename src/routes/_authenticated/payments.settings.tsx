@@ -97,11 +97,28 @@ function PaymentsSettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-3xl font-extrabold flex items-center gap-2"><Settings2 /> Payments settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-extrabold flex flex-wrap items-center gap-2">
+          <Settings2 /> Payments settings
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${
+              settings?.activeMode === "live" && settings?.configured
+                ? "bg-success text-success-foreground"
+                : "bg-warning text-warning-foreground"
+            }`}
+          >
+            {settings?.activeMode === "live" ? "Live" : "Test"}
+          </span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
           Keys are stored privately on the server — they are never sent to browsers, only a masked preview is shown.
         </p>
+        {!settings?.configured && (
+          <p className="mt-2 text-sm text-destructive">
+            Payments are not yet configured for live transactions. Save your live Flutterwave secret key below to start accepting real payments.
+          </p>
+        )}
       </div>
+
 
       <div className="card-soft p-5 space-y-4">
         <div>

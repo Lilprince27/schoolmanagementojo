@@ -90,50 +90,96 @@ function AuthedShell() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center justify-between px-4 lg:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open navigation">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 p-0">
-              <SheetHeader className="sr-only">
-                <SheetTitle>Navigation</SheetTitle>
-                <SheetDescription>Open school administration areas</SheetDescription>
-              </SheetHeader>
-              <div className="h-16 px-5 flex items-center gap-2 border-b border-border">
-                {logoUrl ? (
-                  <img src={logoUrl} alt={schoolName} className="h-9 w-9 rounded-xl object-cover" />
-                ) : (
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
-                    <GraduationCap className="h-5 w-5" />
-                  </span>
-                )}
-                <span className="font-bold truncate">{schoolName}</span>
-              </div>
-              <nav className="p-3 space-y-1">
-                <NavLinks items={navItems} />
-              </nav>
-              <div className="p-3 border-t border-border">
-                <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
-                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+        <header className="app-bar sticky top-0 z-30 border-b border-border bg-card/85 backdrop-blur-xl lg:hidden">
+          <div className="h-14 flex items-center justify-between px-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Open navigation">
+                  <Menu className="h-5 w-5" />
                 </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-          <Link to={membership?.isPlatformAdmin ? "/platform" : "/dashboard"} className="flex min-w-0 items-center gap-2 font-bold">
-            {logoUrl ? <img src={logoUrl} alt="" className="h-6 w-6 rounded object-cover" /> : <GraduationCap className="h-5 w-5 text-primary" />}
-            <span className="truncate">{schoolName}</span>
-          </Link>
-          <Button variant="ghost" size="icon" aria-label="Sign out" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Navigation</SheetTitle>
+                  <SheetDescription>Open school administration areas</SheetDescription>
+                </SheetHeader>
+                <div className="h-16 px-5 flex items-center gap-2 border-b border-border">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={schoolName} className="h-9 w-9 rounded-xl object-cover" />
+                  ) : (
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
+                      <GraduationCap className="h-5 w-5" />
+                    </span>
+                  )}
+                  <span className="font-bold truncate">{schoolName}</span>
+                </div>
+                <nav className="p-3 space-y-1 overflow-y-auto">
+                  <NavLinks items={navItems} />
+                </nav>
+                <div className="p-3 border-t border-border">
+                  <Button variant="ghost" className="w-full justify-start h-11" onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sign out
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+            <Link to={membership?.isPlatformAdmin ? "/platform" : "/dashboard"} className="flex min-w-0 items-center gap-2 font-bold">
+              {logoUrl ? <img src={logoUrl} alt="" className="h-6 w-6 rounded object-cover" /> : <GraduationCap className="h-5 w-5 text-primary" />}
+              <span className="truncate text-[15px]">{schoolName}</span>
+            </Link>
+            <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Sign out" onClick={signOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </header>
-        <main className="flex-1 p-6 lg:p-10 max-w-7xl w-full mx-auto">
+
+        <main className="app-main flex-1 w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-10 lg:py-10">
           <Outlet />
         </main>
+
+        <BottomTabs items={navItems} />
       </div>
     </div>
   );
+}
+
+/** Native-style bottom tab bar (mobile only) built from the user's primary destinations. */
+function BottomTabs({ items }: { items: NavItem[] }) {
+  const tabs = dedupe(items).slice(0, 5);
+  if (tabs.length < 2) return null;
+  return (
+    <nav className="tab-bar lg:hidden" aria-label="Primary">
+      {tabs.map((item) => (
+        <Link
+          key={`${item.to}-${item.label}`}
+          to={item.to}
+          className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium text-muted-foreground"
+          activeProps={{ className: "flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-semibold text-primary" }}
+        >
+          <item.icon className="h-5 w-5" />
+          <span className="max-w-full truncate px-1">{shortLabel(item.label)}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+function dedupe(items: NavItem[]): NavItem[] {
+  const seen = new Set<string>();
+  return items.filter((i) => (seen.has(i.to) ? false : (seen.add(i.to), true)));
+}
+
+function shortLabel(label: string): string {
+  const map: Record<string, string> = {
+    "Fees & Payments": "Fees",
+    "Classes & Subjects": "Classes",
+    "Payments history": "Payments",
+    "Payments settings": "Settings",
+    "Choose your school": "School",
+    "School Bus": "Bus",
+    "My children": "Children",
+  };
+  return map[label] ?? label;
 }
 
 type NavItem = { to: string; label: string; icon: any };

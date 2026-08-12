@@ -47,6 +47,24 @@ export async function settlePaymentByReference(reference: string) {
       .from("shop_orders")
       .update({ payment_status: "paid", status: "processing" })
       .eq("id", payment.order_id);
+
+    // Stock is only reduced once the payment has been verified server-side.
+    const { data: items } = await admin
+      .from("shop_order_items")
+      .select("product_id, quantity")
+      .eq("order_id", payment.order_id);
+    for (const item of items ?? []) {
+      const { data: product } = await admin
+        .from("shop_products")
+        .select("stock")
+        .eq("id", item.product_id)
+        .maybeSingle();
+      if (!product) continue;
+      await admin
+        .from("shop_products")
+        .update({ stock: Math.max(0, Number(product.stock ?? 0) - Number(item.quantity)) })
+        .eq("id", item.product_id);
+    }
   }
 
   if (payment.bus_fee_payment_id) {

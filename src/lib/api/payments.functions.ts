@@ -39,12 +39,19 @@ export const connectSchoolPayout = createServerFn({ method: "POST" })
     });
     if (!allowed) throw new Error("Only the school administrator can set up payouts");
 
-    const { data: school } = await context.supabase
+    // Financial columns are not granted to `authenticated`, so read them with the
+    // service client AFTER the school-admin authorization check above.
+    const { supabaseAdmin: adminRead } = await import("@/integrations/supabase/client.server");
+    const { data: school } = await adminRead
       .from("schools")
       .select("name, platform_fee_percent")
       .eq("id", data.school_id)
       .maybeSingle();
-    if (!school) throw new Error("School not found");
+    if (!school) {
+      throw new Error(
+        "Unable to load your school information. Please refresh or contact your school administrator.",
+      );
+    }
 
     const { createSubaccount } = await import("@/lib/payments.server");
     const sub = await createSubaccount({
@@ -134,7 +141,10 @@ export const startPayment = createServerFn({ method: "POST" })
     if (!schoolId) throw new Error("Could not determine the school for this payment");
     if (!(amount > 0)) throw new Error("Nothing to pay");
 
-    const { data: school } = await supabase
+    // Payout routing columns are server-only; the payer is already authorized for
+    // this specific order/invoice above, so read the school with the service client.
+    const { supabaseAdmin: schoolRead } = await import("@/integrations/supabase/client.server");
+    const { data: school } = await schoolRead
       .from("schools")
       .select("name, logo_url, flw_subaccount_id")
       .eq("id", schoolId)
