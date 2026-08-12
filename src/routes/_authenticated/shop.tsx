@@ -196,7 +196,7 @@ function BrowseTab({ schoolId, userId }: { schoolId: string; userId: string }) {
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-medium border capitalize ${active ? "bg-primary text-primary-foreground border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted"}`}>
+      className={`shrink-0 px-4 py-2.5 rounded-full text-xs font-medium border capitalize ${active ? "bg-primary text-primary-foreground border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted"}`}>
       {children}
     </button>
   );
