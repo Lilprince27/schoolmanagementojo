@@ -3,6 +3,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/hooks/use-auth";
+import { useMembership } from "@/lib/hooks/use-membership";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,17 +17,22 @@ export const Route = createFileRoute("/_authenticated/admin/announcements")({ co
 
 function AdminAnnouncements() {
   const { user } = useSession();
+  const { data: membership } = useMembership(user?.id, user?.email);
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", body: "", audience: "all" as "all" | "teachers" | "parents" | "students" });
   const { data } = useQuery({ queryKey: ["announcements"], queryFn: async () => (await supabase.from("announcements").select("*").order("created_at", { ascending: false })).data ?? [] });
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("announcements").insert({ ...form, created_by: user?.id });
+    if (!membership?.schoolId) return toast.error("Join or create a school before posting announcements");
+    const { error } = await supabase
+      .from("announcements")
+      .insert({ ...form, created_by: user?.id, school_org_id: membership.schoolId } as any);
     if (error) return toast.error(error.message);
     toast.success("Announcement posted"); setForm({ title: "", body: "", audience: "all" });
     qc.invalidateQueries({ queryKey: ["announcements"] });
   }
+
   return (
     <div className="space-y-6">
       <div>
