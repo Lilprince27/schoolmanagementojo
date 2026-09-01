@@ -20,12 +20,21 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const sb = supabaseForUser(ctx);
+    const { data: school } = await sb
+      .from("schools")
+      .select("id")
+      .eq("admin_profile_id", ctx.getUserId())
+      .maybeSingle();
+    if (!school) {
+      return { content: [{ type: "text", text: "Only a school administrator can post announcements" }], isError: true };
+    }
     const { data, error } = await sb
       .from("announcements")
-      .insert({ title, body, audience: audience ?? "all", created_by: ctx.getUserId() })
+      .insert({ title, body, audience: audience ?? "all", created_by: ctx.getUserId(), school_org_id: school.id } as any)
       .select()
       .single();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+
     return {
       content: [{ type: "text", text: `Created announcement ${data.id}` }],
       structuredContent: { announcement: data },
