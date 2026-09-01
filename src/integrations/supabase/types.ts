@@ -65,6 +65,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          school_org_id: string | null
           title: string
           updated_at: string
         }
@@ -74,6 +75,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          school_org_id?: string | null
           title: string
           updated_at?: string
         }
@@ -83,10 +85,19 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          school_org_id?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "announcements_school_org_id_fkey"
+            columns: ["school_org_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       attendance: {
         Row: {
@@ -1979,6 +1990,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_of_user: {
+        Args: { _admin: string; _target: string }
+        Returns: boolean
+      }
       is_any_teacher: { Args: { _user_id: string }; Returns: boolean }
       is_parent_of: {
         Args: { _student_id: string; _user_id: string }
@@ -2027,6 +2042,7 @@ export type Database = {
           payout_bank_code: string
         }[]
       }
+      student_school: { Args: { _student_id: string }; Returns: string }
       teacher_can_see_student: {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
