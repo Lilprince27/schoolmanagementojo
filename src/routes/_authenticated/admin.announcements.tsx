@@ -3,6 +3,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/hooks/use-auth";
+import { useMembership } from "@/lib/hooks/use-membership";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
